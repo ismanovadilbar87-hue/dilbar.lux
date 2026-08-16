@@ -176,8 +176,10 @@
             justify-content: center;
             overflow: hidden;
             position: relative;
+            cursor: pointer;
         }
-        .product-img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .product-img-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+        .product-img-box:hover img { transform: scale(1.05); }
 
         .product-badge-code {
             position: absolute;
@@ -190,6 +192,19 @@
             border-radius: 6px;
             font-size: 10px;
             font-weight: 700;
+            z-index: 2;
+        }
+
+        .zoom-hint {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(6, 11, 20, 0.75);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            pointer-events: none;
         }
 
         .product-info { padding: 14px; display: flex; flex-direction: column; flex-grow: 1; }
@@ -316,6 +331,26 @@
             text-align: center;
             max-height: 90vh;
             overflow-y: auto;
+        }
+
+        /* Окно увеличенного просмотра фото */
+        .image-viewer-content {
+            background: #060b14;
+            border: 1px solid var(--border-color);
+            max-width: 90vw;
+            max-height: 85vh;
+            border-radius: 16px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        .image-viewer-content img {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            border-radius: 10px;
         }
 
         .phone-transfer-card {
@@ -490,6 +525,17 @@
     </div>
 </div>
 
+<!-- МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФОТО -->
+<div id="image_modal" class="modal" onclick="closeModal('image_modal')">
+    <div class="image-viewer-content" onclick="event.stopPropagation()">
+        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span id="image_modal_title" style="font-size:14px; font-weight:700; color:var(--accent-primary);"></span>
+            <button onclick="closeModal('image_modal')" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
+        </div>
+        <img id="image_modal_src" src="" alt="Фото товара">
+    </div>
+</div>
+
 <div id="cart_modal" class="modal">
     <div class="modal-content">
         <h3 style="margin-bottom:12px; font-size:16px;">🛒 Корзина dilbar.luxe</h3>
@@ -582,7 +628,6 @@
             if (!db.sales) db.sales = [];
             if (!db.debts) db.debts = [];
         } else {
-            // Первый запуск базы
             save();
         }
         renderCatalog();
@@ -631,6 +676,12 @@
         document.getElementById('transfer_info_box').style.display = (val === 'Наличные' || val === 'В долг') ? 'none' : 'flex';
     }
 
+    function openImageViewer(src, title) {
+        document.getElementById('image_modal_src').src = src || DEFAULT_LOGO;
+        document.getElementById('image_modal_title').innerText = title || 'dilbar.luxe';
+        document.getElementById('image_modal').classList.add('active');
+    }
+
     function renderCatalog() {
         const q = (document.getElementById('catalog_search')?.value || '').toLowerCase();
         const grid = document.getElementById('catalog_grid');
@@ -650,6 +701,7 @@
             }
             const activeSize = selectedSizes[item.code];
             const activeSizeQty = item.sizes?.[activeSize] || 0;
+            const imgSrc = item.img || DEFAULT_LOGO;
 
             const card = document.createElement('div');
             card.className = 'product-card';
@@ -668,9 +720,10 @@
             }).join('');
 
             card.innerHTML = `
-                <div class="product-img-box">
+                <div class="product-img-box" onclick="openImageViewer('${imgSrc}', '${item.name.replace(/'/g, "\\'")}')">
                     <span class="product-badge-code">АРТ: ${item.code}</span>
-                    <img src="${item.img || DEFAULT_LOGO}" alt="${item.name}">
+                    <img src="${imgSrc}" alt="${item.name}">
+                    <span class="zoom-hint">🔍 Нажмите для зума</span>
                 </div>
                 <div class="product-info">
                     <div class="product-title">${item.name}</div>
@@ -925,8 +978,34 @@
         };
 
         if (file) {
+            // Сжатие изображения для быстрой загрузки
             const reader = new FileReader();
-            reader.onload = (ev) => saveToDb(ev.target.result);
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxW = 900;
+                    const maxH = 900;
+                    let w = img.width;
+                    let h = img.height;
+
+                    if (w > h && w > maxW) {
+                        h = Math.round(h * (maxW / w));
+                        w = maxW;
+                    } else if (h > maxH) {
+                        w = Math.round(w * (maxH / h));
+                        h = maxH;
+                    }
+
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                    saveToDb(compressedDataUrl);
+                };
+                img.src = event.target.result;
+            };
             reader.readAsDataURL(file);
         } else {
             saveToDb('');
@@ -1009,9 +1088,10 @@
         document.getElementById('admin_stock_body').innerHTML = db.stock.map((r, i) => {
             const total = getTotalQty(r.sizes);
             const sizesStr = `S:<b>${r.sizes?.S || 0}</b> | M:<b>${r.sizes?.M || 0}</b> | L:<b>${r.sizes?.L || 0}</b> | XL:<b>${r.sizes?.XL || 0}</b> | 2XL:<b>${r.sizes?.['2XL'] || 0}</b>`;
+            const imgSrc = r.img || DEFAULT_LOGO;
             return `
                 <tr>
-                    <td><img src="${r.img || DEFAULT_LOGO}" style="width:36px; height:36px; border-radius:6px; object-fit:cover;"></td>
+                    <td><img src="${imgSrc}" onclick="openImageViewer('${imgSrc}', '${r.name.replace(/'/g, "\\'")}')" style="width:36px; height:36px; border-radius:6px; object-fit:cover; cursor:pointer;"></td>
                     <td><b>${r.code}</b></td>
                     <td>${r.name}</td>
                     <td style="font-size:10px; color:#94a3b8;">${sizesStr}</td>
