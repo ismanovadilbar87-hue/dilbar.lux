@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dilbar.luxe — Каталог & POS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #060b14;
+            --bg-surface: rgba(13, 22, 40, 0.88);
+            --bg-card: rgba(20, 32, 56, 0.85);
+            --bg-input: #0a1120;
+            --accent-primary: #d4a373;
+            --accent-glow: rgba(212, 163, 115, 0.35);
+            --accent-green: #10b981;
+            --accent-red: #f43f5e;
+            --text-title: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(212, 163, 115, 0.22);
+            --radius-lg: 16px;
+            --radius-md: 10px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-title);
+            min-height: 100vh;
+            padding-bottom: 60px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .brand-bg-watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(90vw, 560px);
+            height: min(90vw, 560px);
+            opacity: 0.18;
+            pointer-events: none;
+            z-index: 0;
+            object-fit: contain;
+            filter: drop-shadow(0 0 35px rgba(212, 163, 115, 0.25));
+        }
+
+        .bg-glow-top {
+            position: fixed;
+            top: -150px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 700px;
+            height: 350px;
+            background: radial-gradient(circle, rgba(212, 163, 115, 0.14) 0%, rgba(6, 11, 20, 0) 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        header {
+            background: rgba(10, 17, 32, 0.94);
+            backdrop-filter: blur(14px);
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 17px;
+            font-weight: 800;
+            color: #fff;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+        }
+        .brand-logo-img {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-glow);
+            background: #060b14;
+        }
+        .brand span { color: var(--accent-primary); }
+
+        .header-actions { display: flex; gap: 8px; align-items: center; }
+        .btn-cart-nav {
+            background: linear-gradient(135deg, #c59b6d, #d4a373);
+            color: #060b14;
+            border: none;
+            padding: 7px 13px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 10px var(--accent-glow);
+            white-space: nowrap;
+        }
+
+        .btn-admin-login {
+            background: #10192d;
+            color: var(--accent-primary);
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+        .btn-admin-login:hover { background: var(--accent-primary); color: #060b14; }
+
+        .container { max-width: 1140px; margin: 20px auto; padding: 0 14px; position: relative; z-index: 1; }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 20px;
+            backdrop-filter: blur(8px);
+        }
+        .search-input:focus { border-color: var(--accent-primary); box-shadow: 0 0 12px var(--accent-glow); }
+
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .product-card {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(212, 163, 115, 0.45);
+        }
+
+        .product-img-box {
+            width: 100%;
+            height: 200px;
+            background: #0a1120;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .product-img-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        .product-badge-code {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(6, 11, 20, 0.88);
+            color: var(--accent-primary);
+            border: 1px solid rgba(212, 163, 115, 0.3);
+            padding: 3px 6px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        .product-info { padding: 14px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #fff; }
+
+        .size-picker-title { font-size: 10px; font-weight: 700; color: var(--accent-primary); text-transform: uppercase; margin-bottom: 5px; }
+        .sizes-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+        .size-btn {
+            background: #0a1120;
+            border: 1px solid var(--border-color);
+            color: #cbd5e1;
+            padding: 4px 7px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .size-btn.active { background: var(--accent-primary); color: #060b14; border-color: var(--accent-primary); }
+        .size-btn.disabled { opacity: 0.3; cursor: not-allowed; text-decoration: line-through; }
+
+        .product-price { font-size: 18px; font-weight: 800; color: #fefae0; margin-top: auto; padding-bottom: 8px; }
+
+        .btn-buy {
+            background: #141f36;
+            color: #fff;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .btn-buy:hover { background: var(--accent-primary); color: #060b14; }
+
+        .admin-wrap {
+            display: none;
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+        }
+        .admin-wrap.active { display: block; }
+        .admin-nav { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; }
+        .admin-tab-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .admin-tab-btn.active { background: var(--accent-primary); color: #060b14; }
+
+        .profit-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .profit-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            text-align: left;
+        }
+        .profit-label { font-size: 10px; color: var(--accent-primary); font-weight: 700; text-transform: uppercase; }
+        .profit-val { font-size: 18px; font-weight: 800; margin-top: 3px; }
+
+        .input-field {
+            width: 100%;
+            padding: 9px 11px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            color: #fff;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        .input-field:focus { border-color: var(--accent-primary); }
+
+        .sizes-input-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+            background: #0a1120;
+            padding: 8px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+        .sizes-input-grid div { text-align: center; font-size: 10px; font-weight: 700; color: var(--text-muted); }
+        .sizes-input-grid input { margin-top: 3px; margin-bottom: 0; text-align: center; padding: 5px; }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin-top: 10px; }
+        th, td { padding: 8px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        th { background: #10192d; color: var(--accent-primary); }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(3, 7, 14, 0.88);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 14px;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #0d1628;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .phone-transfer-card {
+            background: #060b14;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .phone-val { font-size: 16px; font-weight: 800; color: var(--accent-primary); }
+
+        .btn-action-main {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 800;
+            width: 100%;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .receipt-card {
+            background: #ffffff;
+            color: #0f172a;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: left;
+            font-family: monospace;
+            margin: 12px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-size: 12px;
+        }
+        .btn-whatsapp {
+            background: #25d366;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 800;
+            width: 100%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
+            margin-top: 8px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-glow-top"></div>
+<img id="bg_watermark" class="brand-bg-watermark" src="logo.png" alt="DILBAR.LUXE">
+
+<header>
+    <div class="brand">
+        <img id="header_logo" class="brand-logo-img" src="logo.png" alt="DILBAR.LUXE">
+        <div id="header_brand_name">dilbar<span>.luxe</span></div>
+    </div>
+    <div class="header-actions">
+        <button class="btn-cart-nav" onclick="openCartModal()">
+            🛒 Корзина (<span id="cart_badge">0</span>)
+        </button>
+        <button class="btn-admin-login" onclick="promptAdminLogin()">🔒</button>
+    </div>
+</header>
+
+<div class="container">
+    <div id="client_view">
+        <input type="text" id="catalog_search" class="search-input" placeholder="🔍 Поиск в коллекции dilbar.luxe..." oninput="renderCatalog()">
+        <div id="catalog_grid" class="catalog-grid"></div>
+    </div>
+
+    <div id="admin_view" class="admin-wrap">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+            <h2 style="font-size: 18px; font-weight: 800;">⚙️ dilbar.luxe — Управление</h2>
+            <div style="display:flex; gap:6px;">
+                <input type="file" id="brand_logo_input" accept="image/*" style="display:none;" onchange="uploadBrandLogo(event)">
+                <button onclick="document.getElementById('brand_logo_input').click()" style="background:#141f36; color:var(--accent-primary); border:1px solid var(--border-color); padding:6px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">🖼️ Логотип</button>
+                <button onclick="exitAdmin()" style="background:#f43f5e; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">✕</button>
+            </div>
+        </div>
+
+        <div class="profit-dashboard">
+            <div class="profit-card">
+                <div class="profit-label">💵 Выручка</div>
+                <div id="dash_revenue" class="profit-val" style="color: var(--accent-primary);">0 ₸</div>
+            </div>
+            <div class="profit-card" style="border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.08);">
+                <div class="profit-label" style="color: #10b981;">🚀 Прибыль</div>
+                <div id="dash_net_profit" class="profit-val" style="color: #10b981;">0 ₸</div>
+            </div>
+            <div class="profit-card" style="border-color: rgba(244,63,94,0.4); background: rgba(244,63,94,0.08);">
+                <div class="profit-label" style="color: #f43f5e;">📝 Долги</div>
+                <div id="dash_total_debts" class="profit-val" style="color: #f43f5e;">0 ₸</div>
+            </div>
+            <div class="profit-card">
+                <div class="profit-label">📦 Склад</div>
+                <div id="dash_stock_cost" class="profit-val" style="color: #f59e0b;">0 ₸</div>
+            </div>
+        </div>
+
+        <div class="admin-nav">
+            <button class="admin-tab-btn active" onclick="switchAdminTab('st_tab', this)">📦 Склад</button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('sa_tab', this)">💰 Продажи</button>
+            <button class="admin-tab-btn" onclick="switchAdminTab('db_tab', this)">📝 Должники</button>
+        </div>
+
+        <div id="st_tab" class="admin-subtab">
+            <form onsubmit="addStockItem(event)" style="background:var(--bg-card); padding:12px; border-radius:10px; margin-bottom:16px; border:1px solid var(--border-color);">
+                <div style="display:grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap:8px;">
+                    <input type="text" id="adm_code" class="input-field" placeholder="Код" required>
+                    <input type="text" id="adm_name" class="input-field" placeholder="Название" required>
+                    <input type="number" id="adm_buy" min="0" class="input-field" placeholder="Закуп" required>
+                    <input type="number" id="adm_sell" min="0" class="input-field" placeholder="Продажа" required>
+                </div>
+
+                <div style="font-size:11px; font-weight:700; color:var(--accent-primary); margin-bottom:4px;">Размеры (шт):</div>
+                <div class="sizes-input-grid">
+                    <div>S<input type="number" id="adm_s" min="0" value="0" class="input-field"></div>
+                    <div>M<input type="number" id="adm_m" min="0" value="0" class="input-field"></div>
+                    <div>L<input type="number" id="adm_l" min="0" value="0" class="input-field"></div>
+                    <div>XL<input type="number" id="adm_xl" min="0" value="0" class="input-field"></div>
+                    <div>2XL<input type="number" id="adm_2xl" min="0" value="0" class="input-field"></div>
+                </div>
+
+                <div style="margin-top:4px;">
+                    <label style="font-size:11px; font-weight:700; color:var(--text-muted);">Фото товара:</label>
+                    <input type="file" id="adm_img" accept="image/*" class="input-field">
+                </div>
+                <button type="submit" style="background:var(--accent-primary); color:#060b14; border:none; padding:10px 16px; border-radius:6px; font-weight:800; cursor:pointer; font-size:13px;">+ Сохранить</button>
+            </form>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Фото</th><th>Код</th><th>Название</th><th>Размеры</th><th>Всего</th><th>Закуп</th><th>Продажа</th><th></th></tr></thead>
+                    <tbody id="admin_stock_body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="sa_tab" class="admin-subtab" style="display:none;">
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Чек №</th><th>Клиент</th><th>Товар</th><th>Кол-во</th><th>Сумма</th><th>Прибыль</th><th>Оплата</th><th>Дата</th></tr></thead>
+                    <tbody id="admin_sales_body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="db_tab" class="admin-subtab" style="display:none;">
+            <form onsubmit="addDebtItem(event)" style="display:flex; gap:8px; margin-bottom:12px;">
+                <input type="text" id="adm_deb_name" class="input-field" placeholder="Имя" required>
+                <input type="text" id="adm_deb_phone" class="input-field" placeholder="Телефон" required>
+                <input type="number" id="adm_deb_amount" class="input-field" placeholder="Сумма" required>
+                <input type="text" id="adm_deb_note" class="input-field" placeholder="Заметка">
+                <button type="submit" style="background:#f59e0b; color:#000; border:none; padding:8px 12px; border-radius:6px; font-weight:800; cursor:pointer; font-size:12px;">+ Записать</button>
+            </form>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>№</th><th>Клиент</th><th>Телефон</th><th>Сумма</th><th>Заметка</th><th>Действие</th></tr></thead>
+                    <tbody id="admin_debts_body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="cart_modal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom:12px; font-size:16px;">🛒 Корзина dilbar.luxe</h3>
+        <div id="cart_items_list" style="text-align:left; max-height:180px; overflow-y:auto; margin-bottom:10px;"></div>
+        <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; margin:12px 0;">
+            <span>ИТОГО:</span>
+            <span id="cart_total_price" style="color:var(--accent-primary);">0 ₸</span>
+        </div>
+        <button class="btn-action-main" onclick="openCheckoutModal()">ОФОРМИТЬ ЗАКАЗ ➔</button>
+        <button onclick="closeModal('cart_modal')" style="background:transparent; border:none; color:var(--text-muted); margin-top:10px; cursor:pointer; font-size:12px;">Закрыть</button>
+    </div>
+</div>
+
+<div id="checkout_modal" class="modal">
+    <div class="modal-content">
+        <div style="font-size:11px; color:var(--accent-primary); font-weight:700; text-transform:uppercase;">Оформление заказа</div>
+        <div id="checkout_amount" style="font-size:28px; font-weight:800; color:var(--accent-primary); margin:4px 0;">0 ₸</div>
+
+        <div style="text-align:left; margin-top:8px;">
+            <label style="font-size:11px; color:var(--text-muted); font-weight:700;">Имя и Фамилия:</label>
+            <input type="text" id="cust_name" class="input-field" placeholder="Алина Каримова" required>
+
+            <label style="font-size:11px; color:var(--text-muted); font-weight:700;">Телефон (WhatsApp):</label>
+            <input type="tel" id="cust_phone" class="input-field" placeholder="+7 700 000 00 00" required>
+
+            <label style="font-size:11px; color:var(--text-muted); font-weight:700;">Оплата:</label>
+            <select id="checkout_bank" class="input-field" onchange="toggleTransferInfo()">
+                <option value="Kaspi">🔴 Kaspi перевод</option>
+                <option value="Halyk">🟢 Народный (Halyk)</option>
+                <option value="БЦК">🔵 БЦК (BCC)</option>
+                <option value="Наличные">💵 Наличные продавцу</option>
+                <option value="В долг">📝 В долг</option>
+            </select>
+        </div>
+
+        <div id="transfer_info_box" class="phone-transfer-card">
+            <span class="phone-val">87781902404</span>
+            <button onclick="copyPhone()" style="background:var(--accent-primary); color:#060b14; border:none; padding:5px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">📋 Скопировать</button>
+        </div>
+
+        <button class="btn-action-main" onclick="completeClientOrder()">✅ ПОДТВЕРДИТЬ</button>
+        <button onclick="closeModal('checkout_modal')" style="background:transparent; border:none; color:var(--text-muted); margin-top:8px; cursor:pointer; font-size:12px;">✕ Отмена</button>
+    </div>
+</div>
+
+<div id="receipt_modal" class="modal">
+    <div class="modal-content">
+        <h3 style="color:#10b981; font-size:16px;">🎉 Заказ оформлен!</h3>
+        <div id="receipt_content" class="receipt-card"></div>
+        <a id="whatsapp_btn" href="#" target="_blank" class="btn-whatsapp">
+            📲 Отправить чек в WhatsApp
+        </a>
+        <button onclick="closeModal('receipt_modal')" style="background:#141f36; color:#fff; border:1px solid var(--border-color); padding:8px; border-radius:8px; font-weight:700; width:100%; margin-top:8px; cursor:pointer; font-size:12px;">
+            Готово
+        </button>
+    </div>
+</div>
+
+<script>
+    const DEFAULT_LOGO = "logo.png";
+    const ADMIN_PIN = "14082018";
+    const PAYMENT_PHONE = "87781902404";
+    const WHATSAPP_PHONE = "77013568860";
+    const SIZES_LIST = ['S', 'M', 'L', 'XL', '2XL'];
+
+    let db = JSON.parse(localStorage.getItem('navy_full_pos_db')) || { stock: [], sales: [], debts: [] };
+    let cart = [];
+    let selectedSizes = {};
+
+    function initBranding() {
+        const savedLogo = localStorage.getItem('brand_logo_img') || DEFAULT_LOGO;
+        const hLogo = document.getElementById('header_logo');
+        const bgLogo = document.getElementById('bg_watermark');
+        if (hLogo) hLogo.src = savedLogo;
+        if (bgLogo) bgLogo.src = savedLogo;
+    }
+
+    function uploadBrandLogo(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            localStorage.setItem('brand_logo_img', event.target.result);
+            initBranding();
+            alert("✅ Логотип бренда dilbar.luxe успешно обновлен!");
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function save() {
+        localStorage.setItem('navy_full_pos_db', JSON.stringify(db));
+        renderCatalog();
+        renderAdmin();
+    }
+
+    function getTotalQty(sizesObj) {
+        return Object.values(sizesObj || {}).reduce((a, b) => Number(a) + Number(b), 0);
+    }
+
+    function selectProductSize(code, size) {
+        selectedSizes[code] = size;
+        renderCatalog();
+    }
+
+    function toggleTransferInfo() {
+        const val = document.getElementById('checkout_bank').value;
+        document.getElementById('transfer_info_box').style.display = (val === 'Наличные' || val === 'В долг') ? 'none' : 'flex';
+    }
+
+    function renderCatalog() {
+        const q = (document.getElementById('catalog_search')?.value || '').toLowerCase();
+        const grid = document.getElementById('catalog_grid');
+        grid.innerHTML = '';
+
+        const items = db.stock.filter(i => i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q));
+
+        if (items.length === 0) {
+            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94a3b8; padding:40px 0; font-size:13px;">В коллекции пока нет добавленных товаров</div>';
+            return;
+        }
+
+        items.forEach(item => {
+            if (!selectedSizes[item.code]) {
+                const firstAvailable = SIZES_LIST.find(s => (item.sizes?.[s] || 0) > 0);
+                selectedSizes[item.code] = firstAvailable || 'S';
+            }
+            const activeSize = selectedSizes[item.code];
+            const activeSizeQty = item.sizes?.[activeSize] || 0;
+
+            const card = document.createElement('div');
+            card.className = 'product-card';
+
+            let sizesHtml = SIZES_LIST.map(sz => {
+                const qty = item.sizes?.[sz] || 0;
+                const isDis = qty <= 0;
+                const isAct = activeSize === sz;
+                return `
+                    <button class="size-btn ${isAct ? 'active' : ''} ${isDis ? 'disabled' : ''}"
+                            onclick="selectProductSize('${item.code}', '${sz}')"
+                            ${isDis ? 'disabled' : ''}>
+                        ${sz} (${qty})
+                    </button>
+                `;
+            }).join('');
+
+            card.innerHTML = `
+                <div class="product-img-box">
+                    <span class="product-badge-code">АРТ: ${item.code}</span>
+                    <img src="${item.img || DEFAULT_LOGO}" alt="${item.name}">
+                </div>
+                <div class="product-info">
+                    <div class="product-title">${item.name}</div>
+
+                    <div class="size-picker-title">Размер:</div>
+                    <div class="sizes-row">${sizesHtml}</div>
+
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:6px;">
+                        Выбран ${activeSize}: <b style="color:${activeSizeQty > 0 ? 'var(--accent-primary)' : '#f43f5e'};">${activeSizeQty} шт</b>
+                    </div>
+
+                    <div class="product-price">${item.sellPrice.toLocaleString()} ₸</div>
+                    <button class="btn-buy" onclick="addToCart('${item.code}')" ${activeSizeQty <= 0 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
+                        ${activeSizeQty <= 0 ? 'Раскуплено' : `🛒 В корзину (${activeSize})`}
+                    </button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function addToCart(code) {
+        const item = db.stock.find(i => i.code.toLowerCase() === code.toLowerCase());
+        const size = selectedSizes[code];
+        if (!item || !size) return;
+
+        const maxQty = item.sizes?.[size] || 0;
+        if (maxQty <= 0) return;
+
+        const cartKey = `${item.code}_${size}`;
+        const inCart = cart.find(c => c.cartKey === cartKey);
+
+        if (inCart) {
+            if (inCart.qty < maxQty) inCart.qty++;
+            else alert(`Больше нет размера ${size} в наличии!`);
+        } else {
+            cart.push({
+                cartKey,
+                code: item.code,
+                name: item.name,
+                size: size,
+                buyPrice: item.buyPrice,
+                sellPrice: item.sellPrice,
+                qty: 1
+            });
+        }
+        updateCartBadge();
+    }
+
+    function updateCartBadge() {
+        const count = cart.reduce((s, i) => s + i.qty, 0);
+        document.getElementById('cart_badge').innerText = count;
+    }
+
+    function openCartModal() {
+        const list = document.getElementById('cart_items_list');
+        list.innerHTML = '';
+        let total = 0;
+
+        if (cart.length === 0) {
+            list.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:16px; font-size:13px;">Корзина пуста</div>';
+        } else {
+            cart.forEach((c, idx) => {
+                const sub = c.sellPrice * c.qty;
+                total += sub;
+                list.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border-color);">
+                        <div>
+                            <b>${c.name}</b> <span style="color:var(--accent-primary);">[${c.size}]</span><br>
+                            <small style="color:var(--text-muted);">${c.qty} шт × ${c.sellPrice.toLocaleString()} ₸</small>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <b style="color:var(--accent-primary);">${sub.toLocaleString()} ₸</b>
+                            <button onclick="removeFromCart(${idx})" style="background:rgba(244,63,94,0.2); color:#f43f5e; border:none; border-radius:4px; padding:2px 5px; cursor:pointer;">✕</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        document.getElementById('cart_total_price').innerText = `${total.toLocaleString()} ₸`;
+        document.getElementById('cart_modal').classList.add('active');
+    }
+
+    function removeFromCart(idx) {
+        cart.splice(idx, 1);
+        updateCartBadge();
+        openCartModal();
+    }
+
+    function openCheckoutModal() {
+        if (cart.length === 0) { alert("Корзина пуста!"); return; }
+        closeModal('cart_modal');
+        const total = cart.reduce((s, i) => s + (i.sellPrice * i.qty), 0);
+        document.getElementById('checkout_amount').innerText = `${total.toLocaleString()} ₸`;
+        toggleTransferInfo();
+        document.getElementById('checkout_modal').classList.add('active');
+    }
+
+    function completeClientOrder() {
+        const name = document.getElementById('cust_name').value.trim();
+        const phone = document.getElementById('cust_phone').value.trim();
+        const bank = document.getElementById('checkout_bank').value;
+
+        if (!name) { alert("Пожалуйста, введите Имя и Фамилию!"); return; }
+        if (!phone) { alert("Пожалуйста, введите номер телефона!"); return; }
+
+        const checkNum = "CHK-" + Math.floor(1000 + Math.random() * 9000);
+        const orderDate = new Date().toLocaleDateString('ru-RU') + ' ' + new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+        let totalSum = 0;
+        let itemsSummaryText = "";
+
+        cart.forEach(c => {
+            const st = db.stock.find(i => i.code.toLowerCase() === c.code.toLowerCase());
+            if (st && st.sizes?.[c.size]) {
+                st.sizes[c.size] -= c.qty;
+            }
+
+            const totalSell = c.sellPrice * c.qty;
+            const totalBuy = (c.buyPrice || 0) * c.qty;
+            const netProfit = totalSell - totalBuy;
+            totalSum += totalSell;
+
+            itemsSummaryText += `• ${c.name} [${c.size}] x ${c.qty} шт = ${totalSell.toLocaleString()} ₸\n`;
+
+            db.sales.unshift({
+                checkNum: checkNum,
+                customer: `${name} (${phone})`,
+                code: c.code,
+                name: `${c.name} (${c.size})`,
+                size: c.size,
+                qty: c.qty,
+                buyPrice: c.buyPrice || 0,
+                totalPrice: totalSell,
+                totalBuyPrice: totalBuy,
+                netProfit: netProfit,
+                paymentMethod: bank,
+                date: orderDate
+            });
+        });
+
+        if (bank === 'В долг') {
+            db.debts.unshift({
+                checkNum: checkNum,
+                name: name,
+                phone: phone,
+                amount: totalSum,
+                note: `Чек ${checkNum}: ${cart.map(c => `${c.name} [${c.size}]`).join(', ')}`
+            });
+        }
+
+        const receiptHtml = `
+            <div style="text-align:center; border-bottom:1px dashed #000; padding-bottom:6px; margin-bottom:6px;">
+                <b style="font-size:15px; letter-spacing:1px;">DILBAR.LUXE</b><br>
+                <span>Чек №: ${checkNum}</span><br>
+                <small>${orderDate}</small>
+            </div>
+            <div><b>Покупатель:</b> ${name}</div>
+            <div><b>Телефон клиента:</b> ${phone}</div>
+            <div><b>Способ оплаты:</b> ${bank}</div>
+            <hr style="border:none; border-top:1px dashed #ccc; margin:6px 0;">
+            <div>${cart.map(c => `<div>${c.name} [${c.size}] × ${c.qty} = <b>${(c.sellPrice*c.qty).toLocaleString()} ₸</b></div>`).join('')}</div>
+            <hr style="border:none; border-top:1px dashed #000; margin:6px 0;">
+            <div style="font-size:14px; display:flex; justify-content:space-between;">
+                <b>ИТОГО К ОПЛАТЕ:</b>
+                <b>${totalSum.toLocaleString()} ₸</b>
+            </div>
+        `;
+
+        document.getElementById('receipt_content').innerHTML = receiptHtml;
+
+        const waText = encodeURIComponent(
+            `✨ *DILBAR.LUXE — ЧЕК ${checkNum}*\n` +
+            `📅 Дата: ${orderDate}\n` +
+            `👤 Клиент: ${name} (${phone})\n` +
+            `💳 Оплата: ${bank}\n\n` +
+            `*Товары:*\n${itemsSummaryText}\n` +
+            `💰 *ИТОГО: ${totalSum.toLocaleString()} ₸*\n\n` +
+            `Благодарим за выбор dilbar.luxe!`
+        );
+
+        document.getElementById('whatsapp_btn').href = `https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${waText}`;
+
+        cart = [];
+        updateCartBadge();
+        closeModal('checkout_modal');
+        save();
+
+        document.getElementById('receipt_modal').classList.add('active');
+    }
+
+    function copyPhone() {
+        navigator.clipboard.writeText(PAYMENT_PHONE).then(() => alert("📋 Номер для перевода скопирован: " + PAYMENT_PHONE));
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function promptAdminLogin() {
+        const pin = prompt("Введите PIN владельца dilbar.luxe:");
+        if (pin === ADMIN_PIN) {
+            document.getElementById('admin_view').classList.add('active');
+            document.getElementById('client_view').style.display = 'none';
+            renderAdmin();
+        } else if (pin !== null) {
+            alert("❌ Неверный PIN!");
+        }
+    }
+
+    function exitAdmin() {
+        document.getElementById('admin_view').classList.remove('active');
+        document.getElementById('client_view').style.display = 'block';
+    }
+
+    function switchAdminTab(tabId, btn) {
+        document.querySelectorAll('.admin-subtab').forEach(t => t.style.display = 'none');
+        document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).style.display = 'block';
+        btn.classList.add('active');
+    }
+
+    function addStockItem(e) {
+        e.preventDefault();
+        const code = document.getElementById('adm_code').value.trim();
+        const name = document.getElementById('adm_name').value.trim();
+        const buyPrice = Number(document.getElementById('adm_buy').value);
+        const sellPrice = Number(document.getElementById('adm_sell').value);
+
+        const sizes = {
+            'S': Number(document.getElementById('adm_s').value) || 0,
+            'M': Number(document.getElementById('adm_m').value) || 0,
+            'L': Number(document.getElementById('adm_l').value) || 0,
+            'XL': Number(document.getElementById('adm_xl').value) || 0,
+            '2XL': Number(document.getElementById('adm_2xl').value) || 0,
+        };
+
+        const file = document.getElementById('adm_img').files[0];
+
+        const saveToDb = (imgData) => {
+            let exist = db.stock.find(i => i.code.toLowerCase() === code.toLowerCase());
+            if (exist) {
+                exist.sizes = sizes;
+                exist.buyPrice = buyPrice;
+                exist.sellPrice = sellPrice;
+                exist.name = name;
+                if (imgData) exist.img = imgData;
+            } else {
+                db.stock.unshift({ code, name, sizes, buyPrice, sellPrice, img: imgData || '' });
+            }
+            e.target.reset();
+            save();
+            alert("Товар сохранен на склад!");
+        };
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => saveToDb(ev.target.result);
+            reader.readAsDataURL(file);
+        } else {
+            saveToDb('');
+        }
+    }
+
+    function addDebtItem(e) {
+        e.preventDefault();
+        db.debts.unshift({
+            name: document.getElementById('adm_deb_name').value.trim(),
+            phone: document.getElementById('adm_deb_phone').value.trim(),
+            amount: Number(document.getElementById('adm_deb_amount').value),
+            note: document.getElementById('adm_deb_note').value.trim()
+        });
+        e.target.reset();
+        save();
+    }
+
+    function settleDebt(idx) {
+        const debt = db.debts[idx];
+        const payType = prompt(
+            `Погашение долга: ${debt.name} (${debt.amount.toLocaleString()} ₸)\n\nКуда поступили деньги?\n1 - Kaspi\n2 - Halyk\n3 - БЦК\n4 - Наличные`,
+            "1"
+        );
+
+        if (!payType) return;
+
+        let selectedMethod = "Kaspi";
+        if (payType === "2") selectedMethod = "Halyk";
+        if (payType === "3") selectedMethod = "БЦК";
+        if (payType === "4") selectedMethod = "Наличные";
+
+        if (debt.checkNum) {
+            db.sales.forEach(sale => {
+                if (sale.checkNum === debt.checkNum && sale.paymentMethod === 'В долг') {
+                    sale.paymentMethod = `${selectedMethod} (Долг закрыт)`;
+                }
+            });
+        } else {
+            db.sales.unshift({
+                checkNum: "ДОЛГ-ОПЛ",
+                customer: `${debt.name} (${debt.phone || '—'})`,
+                code: "DEBT",
+                name: `Погашение долга: ${debt.note || 'Без заметки'}`,
+                size: "—",
+                qty: 1,
+                buyPrice: 0,
+                totalPrice: debt.amount,
+                totalBuyPrice: 0,
+                netProfit: debt.amount,
+                paymentMethod: `${selectedMethod} (Долг закрыт)`,
+                date: new Date().toLocaleDateString('ru-RU')
+            });
+        }
+
+        db.debts.splice(idx, 1);
+        save();
+        alert(`✅ Долг на сумму ${debt.amount.toLocaleString()} ₸ успешно погашен через ${selectedMethod} и зачислен в чистую прибыль!`);
+    }
+
+    function removeRow(type, idx) {
+        db[type].splice(idx, 1);
+        save();
+    }
+
+    function renderAdmin() {
+        const paidSales = db.sales.filter(s => s.paymentMethod !== 'В долг');
+        const totalRevenue = paidSales.reduce((sum, s) => sum + s.totalPrice, 0);
+        const totalCogs = paidSales.reduce((sum, s) => sum + (s.totalBuyPrice !== undefined ? s.totalBuyPrice : ((s.buyPrice || 0) * s.qty)), 0);
+        const totalNetProfit = totalRevenue - totalCogs;
+
+        const totalDebts = db.debts.reduce((sum, d) => sum + d.amount, 0);
+        const totalStockCost = db.stock.reduce((sum, item) => sum + (getTotalQty(item.sizes) * item.buyPrice), 0);
+
+        document.getElementById('dash_revenue').innerText = `${totalRevenue.toLocaleString()} ₸`;
+        document.getElementById('dash_net_profit').innerText = `${totalNetProfit.toLocaleString()} ₸`;
+        document.getElementById('dash_total_debts').innerText = `${totalDebts.toLocaleString()} ₸`;
+        document.getElementById('dash_stock_cost').innerText = `${totalStockCost.toLocaleString()} ₸`;
+
+        document.getElementById('admin_stock_body').innerHTML = db.stock.map((r, i) => {
+            const total = getTotalQty(r.sizes);
+            const sizesStr = `S:<b>${r.sizes?.S || 0}</b> | M:<b>${r.sizes?.M || 0}</b> | L:<b>${r.sizes?.L || 0}</b> | XL:<b>${r.sizes?.XL || 0}</b> | 2XL:<b>${r.sizes?.['2XL'] || 0}</b>`;
+            return `
+                <tr>
+                    <td><img src="${r.img || DEFAULT_LOGO}" style="width:36px; height:36px; border-radius:6px; object-fit:cover;"></td>
+                    <td><b>${r.code}</b></td>
+                    <td>${r.name}</td>
+                    <td style="font-size:10px; color:#94a3b8;">${sizesStr}</td>
+                    <td><b style="color:var(--accent-primary);">${total} шт</b></td>
+                    <td>${r.buyPrice.toLocaleString()} ₸</td>
+                    <td><b style="color:#10b981;">${r.sellPrice.toLocaleString()} ₸</b></td>
+                    <td><button onclick="removeRow('stock', ${i})" style="background:rgba(244,63,94,0.2); color:#f43f5e; border:none; padding:3px 6px; border-radius:4px; cursor:pointer;">✕</button></td>
+                </tr>
+            `;
+        }).join('');
+
+        document.getElementById('admin_sales_body').innerHTML = db.sales.map((r, i) => {
+            const isDebt = r.paymentMethod === 'В долг';
+            return `
+                <tr>
+                    <td><b>${r.checkNum || '—'}</b></td>
+                    <td>${r.customer || 'Клиент'}</td>
+                    <td><b>${r.name}</b></td>
+                    <td>${r.qty} шт</td>
+                    <td><b style="color:var(--accent-primary);">${r.totalPrice.toLocaleString()} ₸</b></td>
+                    <td><b style="color:${isDebt ? '#f43f5e' : '#10b981'};">${isDebt ? 'Долг (0 ₸)' : '+' + r.netProfit.toLocaleString() + ' ₸'}</b></td>
+                    <td><span style="padding:2px 5px; border-radius:4px; font-size:10px; background:${isDebt ? 'rgba(244,63,94,0.2)' : 'rgba(16,185,129,0.2)'}; color:${isDebt ? '#f43f5e' : '#10b981'};">${r.paymentMethod}</span></td>
+                    <td>${r.date}</td>
+                </tr>
+            `;
+        }).join('');
+
+        document.getElementById('admin_debts_body').innerHTML = db.debts.map((r, i) => `
+            <tr>
+                <td>${i+1}</td>
+                <td><b>${r.name}</b></td>
+                <td>${r.phone || '—'}</td>
+                <td style="color:#f43f5e; font-weight:700;">${r.amount.toLocaleString()} ₸</td>
+                <td>${r.note || '—'}</td>
+                <td>
+                    <button onclick="settleDebt(${i})" style="background:rgba(16,185,129,0.2); color:#10b981; border:1px solid #10b981; padding:4px 8px; border-radius:4px; font-weight:700; cursor:pointer;">
+                        💵 Погасить
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    initBranding();
+    save();
+</script>
+</body>
+</html>
