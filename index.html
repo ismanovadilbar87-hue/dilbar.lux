@@ -7,6 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --bg-main: #060b14;
@@ -550,9 +555,47 @@
     const WHATSAPP_PHONE = "77013568860";
     const SIZES_LIST = ['S', 'M', 'L', 'XL', '2XL'];
 
-    let db = JSON.parse(localStorage.getItem('navy_full_pos_db')) || { stock: [], sales: [], debts: [] };
+    // Конфигурация Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyCq9cO-pkC37fqRkcBLCPbnKWUzIKvZvPA",
+        authDomain: "dilbarluxe.firebaseapp.com",
+        projectId: "dilbarluxe",
+        storageBucket: "dilbarluxe.firebasestorage.app",
+        messagingSenderId: "168275361312",
+        appId: "1:168275361312:web:48ecd2e65bfb2ca6fac645",
+        measurementId: "G-ML83HHLBJN"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const firestoreDb = firebase.firestore();
+    const storeDoc = firestoreDb.collection("store").doc("main_data");
+
+    let db = { stock: [], sales: [], debts: [] };
     let cart = [];
     let selectedSizes = {};
+
+    // Онлайн-синхронизация в реальном времени
+    storeDoc.onSnapshot((doc) => {
+        if (doc.exists) {
+            db = doc.data();
+            if (!db.stock) db.stock = [];
+            if (!db.sales) db.sales = [];
+            if (!db.debts) db.debts = [];
+        } else {
+            // Первый запуск базы
+            save();
+        }
+        renderCatalog();
+        renderAdmin();
+    }, (error) => {
+        console.error("Ошибка синхронизации:", error);
+    });
+
+    function save() {
+        storeDoc.set(db).catch((err) => console.error("Ошибка сохранения в базу:", err));
+        renderCatalog();
+        renderAdmin();
+    }
 
     function initBranding() {
         const savedLogo = localStorage.getItem('brand_logo_img') || DEFAULT_LOGO;
@@ -572,12 +615,6 @@
             alert("✅ Логотип бренда dilbar.luxe успешно обновлен!");
         };
         reader.readAsDataURL(file);
-    }
-
-    function save() {
-        localStorage.setItem('navy_full_pos_db', JSON.stringify(db));
-        renderCatalog();
-        renderAdmin();
     }
 
     function getTotalQty(sizesObj) {
@@ -884,7 +921,7 @@
             }
             e.target.reset();
             save();
-            alert("Товар сохранен на склад!");
+            alert("✅ Товар сохранен в общую базу!");
         };
 
         if (file) {
@@ -1019,7 +1056,6 @@
     }
 
     initBranding();
-    save();
 </script>
 </body>
 </html>
