@@ -208,7 +208,17 @@
         }
 
         .product-info { padding: 14px; display: flex; flex-direction: column; flex-grow: 1; }
-        .product-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #fff; }
+        .product-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; color: #fff; }
+
+        .product-color-badge {
+            font-size: 11px;
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
 
         .size-picker-title { font-size: 10px; font-weight: 700; color: var(--accent-primary); text-transform: uppercase; margin-bottom: 5px; }
         .sizes-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
@@ -427,7 +437,7 @@
 
 <div class="container">
     <div id="client_view">
-        <input type="text" id="catalog_search" class="search-input" placeholder="🔍 Поиск в коллекции dilbar.luxe..." oninput="renderCatalog()">
+        <input type="text" id="catalog_search" class="search-input" placeholder="🔍 Поиск по названию, коду или цвету..." oninput="renderCatalog()">
         <div id="catalog_grid" class="catalog-grid"></div>
     </div>
 
@@ -471,9 +481,10 @@
             <form id="stock_form" onsubmit="addStockItem(event)" style="background:var(--bg-card); padding:12px; border-radius:10px; margin-bottom:16px; border:1px solid var(--border-color);">
                 <input type="hidden" id="edit_original_code" value="">
 
-                <div style="display:grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap:8px;">
+                <div style="display:grid; grid-template-columns: 1fr 1.5fr 1fr 1fr 1fr; gap:8px;">
                     <input type="text" id="adm_code" class="input-field" placeholder="Код" required>
                     <input type="text" id="adm_name" class="input-field" placeholder="Название" required>
+                    <input type="text" id="adm_color" class="input-field" placeholder="Цвет (напр. Черный)">
                     <input type="number" id="adm_buy" min="0" class="input-field" placeholder="Закуп" required>
                     <input type="number" id="adm_sell" min="0" class="input-field" placeholder="Продажа" required>
                 </div>
@@ -520,7 +531,7 @@
             </form>
             <div style="overflow-x:auto;">
                 <table>
-                    <thead><tr><th>Фото</th><th>Код</th><th>Название</th><th>Размеры</th><th>Всего</th><th>Закуп</th><th>Продажа</th><th>Действия</th></tr></thead>
+                    <thead><tr><th>Фото</th><th>Код</th><th>Название</th><th>Цвет</th><th>Размеры</th><th>Всего</th><th>Закуп</th><th>Продажа</th><th>Действия</th></tr></thead>
                     <tbody id="admin_stock_body"></tbody>
                 </table>
             </div>
@@ -753,7 +764,11 @@
         const grid = document.getElementById('catalog_grid');
         grid.innerHTML = '';
 
-        const items = db.stock.filter(i => i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q));
+        const items = db.stock.filter(i =>
+            i.name.toLowerCase().includes(q) ||
+            i.code.toLowerCase().includes(q) ||
+            (i.color && i.color.toLowerCase().includes(q))
+        );
 
         if (items.length === 0) {
             grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94a3b8; padding:40px 0; font-size:13px;">В коллекции пока нет добавленных товаров</div>';
@@ -796,6 +811,7 @@
                 </div>
                 <div class="product-info">
                     <div class="product-title">${item.name}</div>
+                    ${item.color ? `<div class="product-color-badge">🎨 Цвет: <b>${item.color}</b></div>` : ''}
 
                     <div class="size-picker-title">Размер:</div>
                     <div class="sizes-row">${sizesHtml}</div>
@@ -833,6 +849,7 @@
                 cartKey,
                 code: item.code,
                 name: item.name,
+                color: item.color || '',
                 size: size,
                 buyPrice: item.buyPrice,
                 sellPrice: item.sellPrice,
@@ -858,10 +875,11 @@
             cart.forEach((c, idx) => {
                 const sub = c.sellPrice * c.qty;
                 total += sub;
+                const colorStr = c.color ? ` (${c.color})` : '';
                 list.innerHTML += `
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--border-color);">
                         <div>
-                            <b>${c.name}</b> <span style="color:var(--accent-primary);">[${c.size}]</span><br>
+                            <b>${c.name}${colorStr}</b> <span style="color:var(--accent-primary);">[${c.size}]</span><br>
                             <small style="color:var(--text-muted);">${c.qty} шт × ${c.sellPrice.toLocaleString()} ₸</small>
                         </div>
                         <div style="display:flex; align-items:center; gap:6px;">
@@ -916,14 +934,16 @@
             const netProfit = totalSell - totalBuy;
             totalSum += totalSell;
 
-            itemsSummaryText += `• ${c.name} [${c.size}] x ${c.qty} шт = ${totalSell.toLocaleString()} ₸\n`;
+            const colorPart = c.color ? ` (Цвет: ${c.color})` : '';
+            itemsSummaryText += `• ${c.name}${colorPart} [${c.size}] x ${c.qty} шт = ${totalSell.toLocaleString()} ₸\n`;
 
             db.sales.unshift({
                 checkNum: checkNum,
                 customer: `${name} (${phone})`,
                 code: c.code,
-                name: `${c.name} (${c.size})`,
+                name: `${c.name}${colorPart} (${c.size})`,
                 size: c.size,
+                color: c.color || '',
                 qty: c.qty,
                 buyPrice: c.buyPrice || 0,
                 totalPrice: totalSell,
@@ -954,7 +974,7 @@
             <div><b>Телефон клиента:</b> ${phone}</div>
             <div><b>Способ оплаты:</b> ${bank}</div>
             <hr style="border:none; border-top:1px dashed #ccc; margin:6px 0;">
-            <div>${cart.map(c => `<div>${c.name} [${c.size}] × ${c.qty} = <b>${(c.sellPrice*c.qty).toLocaleString()} ₸</b></div>`).join('')}</div>
+            <div>${cart.map(c => `<div>${c.name} ${c.color ? `(${c.color})` : ''} [${c.size}] × ${c.qty} = <b>${(c.sellPrice*c.qty).toLocaleString()} ₸</b></div>`).join('')}</div>
             <hr style="border:none; border-top:1px dashed #000; margin:6px 0;">
             <div style="font-size:14px; display:flex; justify-content:space-between;">
                 <b>ИТОГО К ОПЛАТЕ:</b>
@@ -1022,6 +1042,7 @@
         document.getElementById('edit_original_code').value = item.code;
         document.getElementById('adm_code').value = item.code;
         document.getElementById('adm_name').value = item.name;
+        document.getElementById('adm_color').value = item.color || '';
         document.getElementById('adm_buy').value = item.buyPrice;
         document.getElementById('adm_sell').value = item.sellPrice;
 
@@ -1065,6 +1086,7 @@
         const originalCode = document.getElementById('edit_original_code').value.trim();
         const code = document.getElementById('adm_code').value.trim();
         const name = document.getElementById('adm_name').value.trim();
+        const color = document.getElementById('adm_color').value.trim();
         const buyPrice = Number(document.getElementById('adm_buy').value);
         const sellPrice = Number(document.getElementById('adm_sell').value);
         const sizeType = document.getElementById('size_category_select').value;
@@ -1095,28 +1117,28 @@
         const file = document.getElementById('adm_img').files[0];
 
         const saveToDb = (newImgData) => {
-            // Если это редактирование
             if (originalCode) {
                 const target = db.stock.find(i => i.code.toLowerCase() === originalCode.toLowerCase());
                 if (target) {
                     target.code = code;
                     target.name = name;
+                    target.color = color;
                     target.buyPrice = buyPrice;
                     target.sellPrice = sellPrice;
                     target.sizes = sizes;
                     if (newImgData) target.img = newImgData;
                 }
             } else {
-                // Если новый товар или перезапись по коду
                 let exist = db.stock.find(i => i.code.toLowerCase() === code.toLowerCase());
                 if (exist) {
                     exist.sizes = sizes;
+                    exist.color = color;
                     exist.buyPrice = buyPrice;
                     exist.sellPrice = sellPrice;
                     exist.name = name;
                     if (newImgData) exist.img = newImgData;
                 } else {
-                    db.stock.unshift({ code, name, sizes, buyPrice, sellPrice, img: newImgData || '' });
+                    db.stock.unshift({ code, name, color, sizes, buyPrice, sellPrice, img: newImgData || '' });
                 }
             }
 
@@ -1243,6 +1265,7 @@
                     <td><img src="${imgSrc}" onclick="openImageViewer('${imgSrc}', '${r.name.replace(/'/g, "\\'")}')" style="width:36px; height:36px; border-radius:6px; object-fit:cover; cursor:pointer;"></td>
                     <td><b>${r.code}</b></td>
                     <td>${r.name}</td>
+                    <td style="color:var(--accent-primary); font-weight:700;">${r.color || '—'}</td>
                     <td style="font-size:10px; color:#94a3b8;">${sizesStr}</td>
                     <td><b style="color:var(--accent-primary);">${total} шт</b></td>
                     <td>${r.buyPrice.toLocaleString()} ₸</td>
