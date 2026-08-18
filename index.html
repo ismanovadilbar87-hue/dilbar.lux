@@ -477,8 +477,8 @@
                 <input type="hidden" id="edit_original_code" value="">
 
                 <div style="display:grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap:8px;">
-                    <input type="text" id="adm_code" class="input-field" placeholder="Код" required>
-                    <input type="text" id="adm_name" class="input-field" placeholder="Название" required>
+                    <input type="text" id="adm_code" class="input-field" placeholder="Код (Артикул)" required>
+                    <input type="text" id="adm_name" class="input-field" placeholder="Название товара" required>
                     <input type="number" id="adm_buy" min="0" class="input-field" placeholder="Закуп (₸)" required>
                     <input type="number" id="adm_sell" min="0" class="input-field" placeholder="Продажа (₸)" required>
                 </div>
@@ -509,6 +509,12 @@
                     <button type="button" id="btn_cancel_edit" onclick="cancelStockEdit()" style="display:none; background:#141f36; color:#cbd5e1; border:1px solid var(--border-color); padding:10px 16px; border-radius:6px; font-weight:700; cursor:pointer; font-size:13px;">✕ Отмена</button>
                 </div>
             </form>
+
+            <!-- Поиск по коду/названию в складе -->
+            <div style="margin: 14px 0 10px 0;">
+                <input type="text" id="admin_stock_search" class="input-field" placeholder="🔍 Поиск товара на складе по коду, названию или цвету..." oninput="renderAdminStockTable()" style="margin-bottom: 0; padding: 10px 14px; background: var(--bg-card); font-size: 13px;">
+            </div>
+
             <div style="overflow-x:auto;">
                 <table>
                     <thead><tr><th>Фото</th><th>Код</th><th>Название</th><th>Остатки по цветам и размерам</th><th>Всего</th><th>Закуп</th><th>Продажа</th><th>Действия</th></tr></thead>
@@ -637,8 +643,8 @@
 
     let db = { stock: [], sales: [], debts: [] };
     let cart = [];
-    let selectedColorState = {}; // { itemCode: colorName }
-    let selectedSizeState = {};  // { itemCode: sizeName }
+    let selectedColorState = {};
+    let selectedSizeState = {};
 
     storeDoc.onSnapshot((doc) => {
         if (doc.exists) {
@@ -685,7 +691,6 @@
         if (item.variants && typeof item.variants === 'object' && Object.keys(item.variants).length > 0) {
             return item.variants;
         }
-        // Обратная совместимость для старых товаров
         const defaultColor = item.color || "Основной";
         return { [defaultColor]: item.sizes || {} };
     }
@@ -711,7 +716,7 @@
         const container = document.getElementById('admin_color_grids_container');
         container.innerHTML = '';
 
-        colors.forEach((color, cIdx) => {
+        colors.forEach((color) => {
             const block = document.createElement('div');
             block.style.marginBottom = '10px';
             block.innerHTML = `
@@ -1082,8 +1087,8 @@
         btn.classList.add('active');
     }
 
-    function startEditStock(idx) {
-        const item = db.stock[idx];
+    function startEditStock(originalIndex) {
+        const item = db.stock[originalIndex];
         if (!item) return;
 
         document.getElementById('edit_original_code').value = item.code;
@@ -1094,7 +1099,7 @@
 
         const variants = getNormalizedVariants(item);
         const colors = Object.keys(variants);
-        document.getElementById('adm_colors_input').value = colors.join(', ');
+        document.getElementById('adm_colors_input').value = colors.filter(c => c !== 'Основной').join(', ');
 
         const allSizes = Object.values(variants).flatMap(s => Object.keys(s));
         const isKids = allSizes.some(k => ['1','2','3','4','5','6','7','8'].includes(k));
@@ -1164,7 +1169,7 @@
 
             cancelStockEdit();
             save();
-            alert("✅ Товар с цветами и размерами успешно сохранен!");
+            alert("✅ Товар успешно сохранен на складе!");
         };
 
         if (file) {
@@ -1262,6 +1267,54 @@
         }
     }
 
+    function renderAdminStockTable() {
+        const q = (document.getElementById('admin_stock_search')?.value || '').toLowerCase().trim();
+        const tbody = document.getElementById('admin_stock_body');
+
+        const filtered = db.stock.map((item, originalIndex) => ({ item, originalIndex })).filter(({ item }) => {
+            const vars = getNormalizedVariants(item);
+            const colorNames = Object.keys(vars).join(' ').toLowerCase();
+            return (
+                item.code.toLowerCase().includes(q) ||
+                item.name.toLowerCase().includes(q) ||
+                colorNames.includes(q)
+            );
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">Товары по запросу "${q}" не найдены</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(({ item: r, originalIndex: i }) => {
+            const total = getItemTotalQuantity(r);
+            const vars = getNormalizedVariants(r);
+            const varsStr = Object.entries(vars).map(([color, sizes]) => {
+                const sStr = Object.entries(sizes).filter(([_, q]) => q > 0).map(([s, q]) => `${s}:${q}`).join(' ');
+                return `<div><b>${color}:</b> ${sStr || '<small style="opacity:0.5">0 шт</small>'}</div>`;
+            }).join('');
+
+            const imgSrc = r.img || DEFAULT_LOGO;
+            return `
+                <tr>
+                    <td><img src="${imgSrc}" onclick="openImageViewer('${imgSrc}', '${r.name.replace(/'/g, "\\'")}')" style="width:36px; height:36px; border-radius:6px; object-fit:cover; cursor:pointer;"></td>
+                    <td><b style="color:var(--accent-primary); font-size:12.5px;">${r.code}</b></td>
+                    <td><b>${r.name}</b></td>
+                    <td style="font-size:11px; color:#cbd5e1;">${varsStr}</td>
+                    <td><b style="color:var(--accent-primary);">${total} шт</b></td>
+                    <td>${r.buyPrice.toLocaleString()} ₸</td>
+                    <td><b style="color:#10b981;">${r.sellPrice.toLocaleString()} ₸</b></td>
+                    <td>
+                        <div style="display:flex; gap:4px;">
+                            <button onclick="startEditStock(${i})" style="background:rgba(212,163,115,0.2); color:var(--accent-primary); border:1px solid var(--accent-primary); padding:4px 7px; border-radius:4px; cursor:pointer; font-size:11px;" title="Редактировать">✏️</button>
+                            <button onclick="removeRow('stock', ${i})" style="background:rgba(244,63,94,0.2); color:#f43f5e; border:none; padding:4px 7px; border-radius:4px; cursor:pointer; font-size:11px;" title="Удалить">✕</button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+
     function renderAdmin() {
         const paidSales = db.sales.filter(s => s.paymentMethod !== 'В долг');
         const totalRevenue = paidSales.reduce((sum, s) => sum + s.totalPrice, 0);
@@ -1276,33 +1329,7 @@
         document.getElementById('dash_total_debts').innerText = `${totalDebts.toLocaleString()} ₸`;
         document.getElementById('dash_stock_cost').innerText = `${totalStockCost.toLocaleString()} ₸`;
 
-        document.getElementById('admin_stock_body').innerHTML = db.stock.map((r, i) => {
-            const total = getItemTotalQuantity(r);
-            const vars = getNormalizedVariants(r);
-            const varsStr = Object.entries(vars).map(([color, sizes]) => {
-                const sStr = Object.entries(sizes).filter(([_, q]) => q > 0).map(([s, q]) => `${s}:${q}`).join(' ');
-                return `<div><b>${color}:</b> ${sStr || '<small style="opacity:0.5">0 шт</small>'}</div>`;
-            }).join('');
-
-            const imgSrc = r.img || DEFAULT_LOGO;
-            return `
-                <tr>
-                    <td><img src="${imgSrc}" onclick="openImageViewer('${imgSrc}', '${r.name.replace(/'/g, "\\'")}')" style="width:36px; height:36px; border-radius:6px; object-fit:cover; cursor:pointer;"></td>
-                    <td><b>${r.code}</b></td>
-                    <td>${r.name}</td>
-                    <td style="font-size:11px; color:#cbd5e1;">${varsStr}</td>
-                    <td><b style="color:var(--accent-primary);">${total} шт</b></td>
-                    <td>${r.buyPrice.toLocaleString()} ₸</td>
-                    <td><b style="color:#10b981;">${r.sellPrice.toLocaleString()} ₸</b></td>
-                    <td>
-                        <div style="display:flex; gap:4px;">
-                            <button onclick="startEditStock(${i})" style="background:rgba(212,163,115,0.2); color:var(--accent-primary); border:1px solid var(--accent-primary); padding:3px 6px; border-radius:4px; cursor:pointer; font-size:11px;" title="Редактировать">✏️</button>
-                            <button onclick="removeRow('stock', ${i})" style="background:rgba(244,63,94,0.2); color:#f43f5e; border:none; padding:3px 6px; border-radius:4px; cursor:pointer; font-size:11px;" title="Удалить">✕</button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+        renderAdminStockTable();
 
         document.getElementById('admin_sales_body').innerHTML = db.sales.map((r, i) => {
             const isDebt = r.paymentMethod === 'В долг';
