@@ -294,7 +294,6 @@
 
         .sizes-input-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
             gap: 5px;
             margin-bottom: 10px;
             background: #0a1120;
@@ -302,6 +301,8 @@
             border-radius: 10px;
             border: 1px solid var(--border-color);
         }
+        .grid-adult { grid-template-columns: repeat(6, 1fr); }
+        .grid-kids { grid-template-columns: repeat(8, 1fr); }
         .sizes-input-grid div { text-align: center; font-size: 10px; font-weight: 700; color: var(--text-muted); }
         .sizes-input-grid input { margin-top: 3px; margin-bottom: 0; text-align: center; padding: 5px; }
 
@@ -333,7 +334,6 @@
             overflow-y: auto;
         }
 
-        /* Окно увеличенного просмотра фото */
         .image-viewer-content {
             background: #060b14;
             border: 1px solid var(--border-color);
@@ -476,13 +476,34 @@
                     <input type="number" id="adm_sell" min="0" class="input-field" placeholder="Продажа" required>
                 </div>
 
-                <div style="font-size:11px; font-weight:700; color:var(--accent-primary); margin-bottom:4px;">Размеры (шт):</div>
-                <div class="sizes-input-grid">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <div style="font-size:11px; font-weight:700; color:var(--accent-primary);">Тип размеров:</div>
+                    <select id="size_category_select" class="input-field" style="width:auto; margin-bottom:0; padding:4px 8px;" onchange="toggleSizeGridType()">
+                        <option value="adult">Взрослые (S — 3XL)</option>
+                        <option value="kids">Детские (1 — 8)</option>
+                    </select>
+                </div>
+
+                <!-- Взрослая сетка -->
+                <div id="grid_adult_sizes" class="sizes-input-grid grid-adult">
                     <div>S<input type="number" id="adm_s" min="0" value="0" class="input-field"></div>
                     <div>M<input type="number" id="adm_m" min="0" value="0" class="input-field"></div>
                     <div>L<input type="number" id="adm_l" min="0" value="0" class="input-field"></div>
                     <div>XL<input type="number" id="adm_xl" min="0" value="0" class="input-field"></div>
                     <div>2XL<input type="number" id="adm_2xl" min="0" value="0" class="input-field"></div>
+                    <div>3XL<input type="number" id="adm_3xl" min="0" value="0" class="input-field"></div>
+                </div>
+
+                <!-- Детская сетка -->
+                <div id="grid_kids_sizes" class="sizes-input-grid grid-kids" style="display:none;">
+                    <div>1<input type="number" id="adm_k1" min="0" value="0" class="input-field"></div>
+                    <div>2<input type="number" id="adm_k2" min="0" value="0" class="input-field"></div>
+                    <div>3<input type="number" id="adm_k3" min="0" value="0" class="input-field"></div>
+                    <div>4<input type="number" id="adm_k4" min="0" value="0" class="input-field"></div>
+                    <div>5<input type="number" id="adm_k5" min="0" value="0" class="input-field"></div>
+                    <div>6<input type="number" id="adm_k6" min="0" value="0" class="input-field"></div>
+                    <div>7<input type="number" id="adm_k7" min="0" value="0" class="input-field"></div>
+                    <div>8<input type="number" id="adm_k8" min="0" value="0" class="input-field"></div>
                 </div>
 
                 <div style="margin-top:4px;">
@@ -526,7 +547,6 @@
     </div>
 </div>
 
-<!-- МОДАЛЬНОЕ ОКНО ПРОСМОТРА ФОТО -->
 <div id="image_modal" class="modal" onclick="closeModal('image_modal')">
     <div class="image-viewer-content" onclick="event.stopPropagation()">
         <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
@@ -573,7 +593,7 @@
         </div>
 
         <div id="transfer_info_box" class="phone-transfer-card">
-            <span class="phone-val">87781902404</span>
+            <span class="phone-val">87066061525</span>
             <button onclick="copyPhone()" style="background:var(--accent-primary); color:#060b14; border:none; padding:5px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">📋 Скопировать</button>
         </div>
 
@@ -598,11 +618,12 @@
 <script>
     const DEFAULT_LOGO = "logo.png";
     const ADMIN_PIN = "14082018";
-    const PAYMENT_PHONE = "87781902404";
+    const PAYMENT_PHONE = "87066061525";
     const WHATSAPP_PHONE = "77013568860";
-    const SIZES_LIST = ['S', 'M', 'L', 'XL', '2XL'];
 
-    // Конфигурация Firebase
+    const ADULT_SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
+    const KIDS_SIZES = ['1', '2', '3', '4', '5', '6', '7', '8'];
+
     const firebaseConfig = {
         apiKey: "AIzaSyCq9cO-pkC37fqRkcBLCPbnKWUzIKvZvPA",
         authDomain: "dilbarluxe.firebaseapp.com",
@@ -621,7 +642,6 @@
     let cart = [];
     let selectedSizes = {};
 
-    // Онлайн-синхронизация в реальном времени
     storeDoc.onSnapshot((doc) => {
         if (doc.exists) {
             db = doc.data();
@@ -661,6 +681,17 @@
             alert("✅ Логотип бренда dilbar.luxe успешно обновлен!");
         };
         reader.readAsDataURL(file);
+    }
+
+    function toggleSizeGridType() {
+        const type = document.getElementById('size_category_select').value;
+        if (type === 'adult') {
+            document.getElementById('grid_adult_sizes').style.display = 'grid';
+            document.getElementById('grid_kids_sizes').style.display = 'none';
+        } else {
+            document.getElementById('grid_adult_sizes').style.display = 'none';
+            document.getElementById('grid_kids_sizes').style.display = 'grid';
+        }
     }
 
     function resetDashboardStats() {
@@ -724,10 +755,13 @@
         }
 
         items.forEach(item => {
-            if (!selectedSizes[item.code]) {
-                const firstAvailable = SIZES_LIST.find(s => (item.sizes?.[s] || 0) > 0);
-                selectedSizes[item.code] = firstAvailable || 'S';
+            const availableKeys = Object.keys(item.sizes || {}).filter(k => (item.sizes[k] || 0) > 0);
+            const allItemSizes = Object.keys(item.sizes || {});
+
+            if (!selectedSizes[item.code] || !allItemSizes.includes(selectedSizes[item.code])) {
+                selectedSizes[item.code] = availableKeys.length > 0 ? availableKeys[0] : (allItemSizes[0] || 'S');
             }
+
             const activeSize = selectedSizes[item.code];
             const activeSizeQty = item.sizes?.[activeSize] || 0;
             const imgSrc = item.img || DEFAULT_LOGO;
@@ -735,7 +769,7 @@
             const card = document.createElement('div');
             card.className = 'product-card';
 
-            let sizesHtml = SIZES_LIST.map(sz => {
+            let sizesHtml = allItemSizes.map(sz => {
                 const qty = item.sizes?.[sz] || 0;
                 const isDis = qty <= 0;
                 const isAct = activeSize === sz;
@@ -979,14 +1013,30 @@
         const name = document.getElementById('adm_name').value.trim();
         const buyPrice = Number(document.getElementById('adm_buy').value);
         const sellPrice = Number(document.getElementById('adm_sell').value);
+        const sizeType = document.getElementById('size_category_select').value;
 
-        const sizes = {
-            'S': Number(document.getElementById('adm_s').value) || 0,
-            'M': Number(document.getElementById('adm_m').value) || 0,
-            'L': Number(document.getElementById('adm_l').value) || 0,
-            'XL': Number(document.getElementById('adm_xl').value) || 0,
-            '2XL': Number(document.getElementById('adm_2xl').value) || 0,
-        };
+        let sizes = {};
+        if (sizeType === 'adult') {
+            sizes = {
+                'S': Number(document.getElementById('adm_s').value) || 0,
+                'M': Number(document.getElementById('adm_m').value) || 0,
+                'L': Number(document.getElementById('adm_l').value) || 0,
+                'XL': Number(document.getElementById('adm_xl').value) || 0,
+                '2XL': Number(document.getElementById('adm_2xl').value) || 0,
+                '3XL': Number(document.getElementById('adm_3xl').value) || 0,
+            };
+        } else {
+            sizes = {
+                '1': Number(document.getElementById('adm_k1').value) || 0,
+                '2': Number(document.getElementById('adm_k2').value) || 0,
+                '3': Number(document.getElementById('adm_k3').value) || 0,
+                '4': Number(document.getElementById('adm_k4').value) || 0,
+                '5': Number(document.getElementById('adm_k5').value) || 0,
+                '6': Number(document.getElementById('adm_k6').value) || 0,
+                '7': Number(document.getElementById('adm_k7').value) || 0,
+                '8': Number(document.getElementById('adm_k8').value) || 0,
+            };
+        }
 
         const file = document.getElementById('adm_img').files[0];
 
@@ -1002,6 +1052,7 @@
                 db.stock.unshift({ code, name, sizes, buyPrice, sellPrice, img: imgData || '' });
             }
             e.target.reset();
+            toggleSizeGridType();
             save();
             alert("✅ Товар сохранен в общую базу!");
         };
@@ -1115,7 +1166,7 @@
 
         document.getElementById('admin_stock_body').innerHTML = db.stock.map((r, i) => {
             const total = getTotalQty(r.sizes);
-            const sizesStr = `S:<b>${r.sizes?.S || 0}</b> | M:<b>${r.sizes?.M || 0}</b> | L:<b>${r.sizes?.L || 0}</b> | XL:<b>${r.sizes?.XL || 0}</b> | 2XL:<b>${r.sizes?.['2XL'] || 0}</b>`;
+            const sizesStr = Object.entries(r.sizes || {}).map(([sz, count]) => `${sz}:<b>${count}</b>`).join(' | ');
             const imgSrc = r.img || DEFAULT_LOGO;
             return `
                 <tr>
