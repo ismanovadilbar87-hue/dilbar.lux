@@ -1,475 +1,475 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>dilbar.luxe — Каталог & POS</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dilbar.luxe — Каталог & POS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Firebase SDK Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <!-- Firebase SDK Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
-    <style>
-        :root {
-            --bg-main: #060b14;
-            --bg-surface: rgba(13, 22, 40, 0.88);
-            --bg-card: rgba(20, 32, 56, 0.85);
-            --bg-input: #0a1120;
-            --accent-primary: #d4a373;
-            --accent-glow: rgba(212, 163, 115, 0.35);
-            --accent-green: #10b981;
-            --accent-red: #f43f5e;
-            --text-title: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: rgba(212, 163, 115, 0.22);
-            --radius-lg: 16px;
-            --radius-md: 10px;
-        }
+  <style>
+    :root {
+      --bg-main: #060b14;
+      --bg-surface: rgba(13, 22, 40, 0.88);
+      --bg-card: rgba(20, 32, 56, 0.85);
+      --bg-input: #0a1120;
+      --accent-primary: #d4a373;
+      --accent-glow: rgba(212, 163, 115, 0.35);
+      --accent-green: #10b981;
+      --accent-red: #f43f5e;
+      --text-title: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: rgba(212, 163, 115, 0.22);
+      --radius-lg: 16px;
+      --radius-md: 10px;
+    }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-title);
-            min-height: 100vh;
-            padding-bottom: 60px;
-            position: relative;
-            overflow-x: hidden;
-        }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-title);
+      min-height: 100vh;
+      padding-bottom: 60px;
+      position: relative;
+      overflow-x: hidden;
+    }
 
-        .brand-bg-watermark {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: min(90vw, 560px);
-            height: min(90vw, 560px);
-            opacity: 0.18;
-            pointer-events: none;
-            z-index: 0;
-            object-fit: contain;
-            filter: drop-shadow(0 0 35px rgba(212, 163, 115, 0.25));
-        }
+    .brand-bg-watermark {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(90vw, 560px);
+      height: min(90vw, 560px);
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+      object-fit: contain;
+      filter: drop-shadow(0 0 35px rgba(212, 163, 115, 0.25));
+    }
 
-        .bg-glow-top {
-            position: fixed;
-            top: -150px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 700px;
-            height: 350px;
-            background: radial-gradient(circle, rgba(212, 163, 115, 0.14) 0%, rgba(6, 11, 20, 0) 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
+    .bg-glow-top {
+      position: fixed;
+      top: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(212, 163, 115, 0.14) 0%, rgba(6, 11, 20, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
 
-        header {
-            background: rgba(10, 17, 32, 0.94);
-            backdrop-filter: blur(14px);
-            padding: 10px 16px;
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    header {
+      background: rgba(10, 17, 32, 0.94);
+      backdrop-filter: blur(14px);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 17px;
-            font-weight: 800;
-            color: #fff;
-            text-decoration: none;
-            letter-spacing: 0.5px;
-        }
-        .brand-logo-img {
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid var(--accent-primary);
-            box-shadow: 0 0 10px var(--accent-glow);
-            background: #060b14;
-        }
-        .brand span { color: var(--accent-primary); }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: 0.5px;
+    }
+    .brand-logo-img {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid var(--accent-primary);
+      box-shadow: 0 0 10px var(--accent-glow);
+      background: #060b14;
+    }
+    .brand span { color: var(--accent-primary); }
 
-        .header-actions { display: flex; gap: 8px; align-items: center; }
-        .btn-cart-nav {
-            background: linear-gradient(135deg, #c59b6d, #d4a373);
-            color: #060b14;
-            border: none;
-            padding: 7px 13px;
-            border-radius: 20px;
-            font-weight: 700;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            box-shadow: 0 2px 10px var(--accent-glow);
-            white-space: nowrap;
-            transition: transform 0.15s;
-        }
-        .btn-cart-nav:active { transform: scale(0.95); }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-cart-nav {
+      background: linear-gradient(135deg, #c59b6d, #d4a373);
+      color: #060b14;
+      border: none;
+      padding: 7px 13px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 2px 10px var(--accent-glow);
+      white-space: nowrap;
+      transition: transform 0.15s;
+    }
+    .btn-cart-nav:active { transform: scale(0.95); }
 
-        .btn-admin-login {
-            background: #10192d;
-            color: var(--accent-primary);
-            border: 1px solid var(--border-color);
-            padding: 6px 10px;
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            font-size: 11.5px;
-            font-weight: 600;
-        }
-        .btn-admin-login:hover { background: var(--accent-primary); color: #060b14; }
+    .btn-admin-login {
+      background: #10192d;
+      color: var(--accent-primary);
+      border: 1px solid var(--border-color);
+      padding: 6px 10px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .btn-admin-login:hover { background: var(--accent-primary); color: #060b14; }
 
-        .container { max-width: 1140px; margin: 20px auto; padding: 0 14px; position: relative; z-index: 1; }
+    .container { max-width: 1140px; margin: 20px auto; padding: 0 14px; position: relative; z-index: 1; }
 
-        .search-input {
-            width: 100%;
-            padding: 12px 16px;
-            background: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            color: #fff;
-            font-size: 14px;
-            outline: none;
-            margin-bottom: 20px;
-            backdrop-filter: blur(8px);
-        }
-        .search-input:focus { border-color: var(--accent-primary); box-shadow: 0 0 12px var(--accent-glow); }
+    .search-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 20px;
+      backdrop-filter: blur(8px);
+    }
+    .search-input:focus { border-color: var(--accent-primary); box-shadow: 0 0 12px var(--accent-glow); }
 
-        .catalog-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 16px;
-        }
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+    }
 
-        .product-card {
-            background: var(--bg-surface);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-            backdrop-filter: blur(8px);
-            transition: transform 0.2s ease, border-color 0.2s ease;
-        }
-        .product-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(212, 163, 115, 0.45);
-        }
+    .product-card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(212, 163, 115, 0.45);
+    }
 
-        .product-img-box {
-            width: 100%;
-            height: 200px;
-            background: #0a1120;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
-        }
-        .product-img-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
-        .product-img-box:hover img { transform: scale(1.05); }
+    .product-img-box {
+      width: 100%;
+      height: 200px;
+      background: #0a1120;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+    }
+    .product-img-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+    .product-img-box:hover img { transform: scale(1.05); }
 
-        .product-badge-code {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(6, 11, 20, 0.88);
-            color: var(--accent-primary);
-            border: 1px solid rgba(212, 163, 115, 0.3);
-            padding: 3px 6px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: 700;
-            z-index: 2;
-        }
+    .product-badge-code {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(6, 11, 20, 0.88);
+      color: var(--accent-primary);
+      border: 1px solid rgba(212, 163, 115, 0.3);
+      padding: 3px 6px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      z-index: 2;
+    }
 
-        .zoom-hint {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(6, 11, 20, 0.75);
-            color: #fff;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 10px;
-            pointer-events: none;
-        }
+    .zoom-hint {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      background: rgba(6, 11, 20, 0.75);
+      color: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      pointer-events: none;
+    }
 
-        .product-info { padding: 14px; display: flex; flex-direction: column; flex-grow: 1; }
-        .product-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #fff; }
+    .product-info { padding: 14px; display: flex; flex-direction: column; flex-grow: 1; }
+    .product-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: #fff; }
 
-        .picker-section-title { font-size: 10px; font-weight: 700; color: var(--accent-primary); text-transform: uppercase; margin-bottom: 4px; }
-        .pills-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+    .picker-section-title { font-size: 10px; font-weight: 700; color: var(--accent-primary); text-transform: uppercase; margin-bottom: 4px; }
+    .pills-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
 
-        .color-pill-btn, .size-btn {
-            background: #0a1120;
-            border: 1px solid var(--border-color);
-            color: #cbd5e1;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .color-pill-btn:active, .size-btn:active { transform: scale(0.92); }
-        .color-pill-btn.active, .size-btn.active {
-            background: var(--accent-primary);
-            color: #060b14;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 8px var(--accent-glow);
-        }
-        .size-btn.disabled { opacity: 0.25; cursor: not-allowed; text-decoration: line-through; }
+    .color-pill-btn, .size-btn {
+      background: #0a1120;
+      border: 1px solid var(--border-color);
+      color: #cbd5e1;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .color-pill-btn:active, .size-btn:active { transform: scale(0.92); }
+    .color-pill-btn.active, .size-btn.active {
+      background: var(--accent-primary);
+      color: #060b14;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+    .size-btn.disabled { opacity: 0.25; cursor: not-allowed; text-decoration: line-through; }
 
-        .product-price { font-size: 18px; font-weight: 800; color: #fefae0; margin-top: auto; padding-bottom: 8px; }
+    .product-price { font-size: 18px; font-weight: 800; color: #fefae0; margin-top: auto; padding-bottom: 8px; }
 
-        .btn-buy {
-            background: #141f36;
-            color: #fff;
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            border-radius: var(--radius-md);
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.15s;
-        }
-        .btn-buy:active { transform: scale(0.97); background: var(--accent-primary); color: #060b14; }
-        .btn-buy:hover { background: var(--accent-primary); color: #060b14; }
+    .btn-buy {
+      background: #141f36;
+      color: #fff;
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.15s;
+    }
+    .btn-buy:active { transform: scale(0.97); background: var(--accent-primary); color: #060b14; }
+    .btn-buy:hover { background: var(--accent-primary); color: #060b14; }
 
-        .admin-wrap {
-            display: none;
-            background: var(--bg-surface);
-            border-radius: var(--radius-lg);
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            backdrop-filter: blur(12px);
-        }
-        .admin-wrap.active { display: block; }
-        .admin-nav { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; }
-        .admin-tab-btn {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            padding: 8px 14px;
-            border-radius: var(--radius-md);
-            font-weight: 700;
-            cursor: pointer;
-            color: var(--text-muted);
-            font-size: 13px;
-        }
-        .admin-tab-btn.active { background: var(--accent-primary); color: #060b14; }
+    .admin-wrap {
+      display: none;
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(12px);
+    }
+    .admin-wrap.active { display: block; }
+    .admin-nav { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; flex-wrap: wrap; }
+    .admin-tab-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .admin-tab-btn.active { background: var(--accent-primary); color: #060b14; }
 
-        .profit-dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-        .profit-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            padding: 12px;
-            text-align: left;
-        }
-        .profit-label { font-size: 10px; color: var(--accent-primary); font-weight: 700; text-transform: uppercase; }
-        .profit-val { font-size: 18px; font-weight: 800; margin-top: 3px; }
+    .profit-dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .profit-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      text-align: left;
+    }
+    .profit-label { font-size: 10px; color: var(--accent-primary); font-weight: 700; text-transform: uppercase; }
+    .profit-val { font-size: 18px; font-weight: 800; margin-top: 3px; }
 
-        .input-field {
-            width: 100%;
-            padding: 9px 11px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-input);
-            color: #fff;
-            border-radius: var(--radius-md);
-            font-size: 13px;
-            outline: none;
-            margin-bottom: 10px;
-        }
-        .input-field:focus { border-color: var(--accent-primary); }
+    .input-field {
+      width: 100%;
+      padding: 9px 11px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-input);
+      color: #fff;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      outline: none;
+      margin-bottom: 10px;
+    }
+    .input-field:focus { border-color: var(--accent-primary); }
 
-        .sizes-input-grid {
-            display: grid;
-            gap: 5px;
-            margin-bottom: 8px;
-            background: #0a1120;
-            padding: 8px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-        }
-        .grid-adult { grid-template-columns: repeat(6, 1fr); }
-        .grid-kids { grid-template-columns: repeat(8, 1fr); }
-        .sizes-input-grid div { text-align: center; font-size: 10px; font-weight: 700; color: var(--text-muted); }
-        .sizes-input-grid input { margin-top: 3px; margin-bottom: 0; text-align: center; padding: 5px; }
+    .sizes-input-grid {
+      display: grid;
+      gap: 5px;
+      margin-bottom: 8px;
+      background: #0a1120;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+    .grid-adult { grid-template-columns: repeat(6, 1fr); }
+    .grid-kids { grid-template-columns: repeat(8, 1fr); }
+    .sizes-input-grid div { text-align: center; font-size: 10px; font-weight: 700; color: var(--text-muted); }
+    .sizes-input-grid input { margin-top: 3px; margin-bottom: 0; text-align: center; padding: 5px; }
 
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin-top: 10px; }
-        th, td { padding: 8px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-        th { background: #10192d; color: var(--accent-primary); }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin-top: 10px; }
+    th, td { padding: 8px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+    th { background: #10192d; color: var(--accent-primary); }
 
-        .modal {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(3, 7, 14, 0.88);
-            backdrop-filter: blur(8px);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-            padding: 14px;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: #0d1628;
-            border: 1px solid var(--border-color);
-            width: 100%;
-            max-width: 460px;
-            border-radius: 16px;
-            padding: 18px;
-            text-align: center;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(3, 7, 14, 0.88);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 14px;
+    }
+    .modal.active { display: flex; }
+    .modal-content {
+      background: #0d1628;
+      border: 1px solid var(--border-color);
+      width: 100%;
+      max-width: 460px;
+      border-radius: 16px;
+      padding: 18px;
+      text-align: center;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
 
-        .image-viewer-content {
-            background: #060b14;
-            border: 1px solid var(--border-color);
-            max-width: 90vw;
-            max-height: 85vh;
-            border-radius: 16px;
-            padding: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        }
-        .image-viewer-content img {
-            max-width: 100%;
-            max-height: 70vh;
-            object-fit: contain;
-            border-radius: 10px;
-        }
+    .image-viewer-content {
+      background: #060b14;
+      border: 1px solid var(--border-color);
+      max-width: 90vw;
+      max-height: 85vh;
+      border-radius: 16px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .image-viewer-content img {
+      max-width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      border-radius: 10px;
+    }
 
-        .phone-transfer-card {
-            background: #060b14;
-            border: 1px solid var(--border-color);
-            padding: 10px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 0;
-        }
-        .phone-val { font-size: 16px; font-weight: 800; color: var(--accent-primary); }
+    .phone-transfer-card {
+      background: #060b14;
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0;
+    }
+    .phone-val { font-size: 16px; font-weight: 800; color: var(--accent-primary); }
 
-        .btn-action-main {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: #fff;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            font-weight: 800;
-            width: 100%;
-            cursor: pointer;
-            font-size: 14px;
-        }
+    .btn-action-main {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 800;
+      width: 100%;
+      cursor: pointer;
+      font-size: 14px;
+    }
 
-        .receipt-card {
-            background: #ffffff;
-            color: #0f172a;
-            border-radius: 10px;
-            padding: 14px;
-            text-align: left;
-            font-family: monospace;
-            margin: 12px 0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            font-size: 12px;
-        }
-        .btn-whatsapp {
-            background: #25d366;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: 800;
-            width: 100%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 13px;
-            margin-top: 8px;
-            text-decoration: none;
-        }
+    .receipt-card {
+      background: #ffffff;
+      color: #0f172a;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: left;
+      font-family: monospace;
+      margin: 12px 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      font-size: 12px;
+    }
+    .btn-whatsapp {
+      background: #25d366;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 800;
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 13px;
+      margin-top: 8px;
+      text-decoration: none;
+    }
 
-        .cart-qty-btn {
-            background: #141f36;
-            color: #fff;
-            border: 1px solid var(--border-color);
-            width: 26px;
-            height: 26px;
-            border-radius: 6px;
-            font-weight: 800;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-        .cart-qty-btn:active { background: var(--accent-primary); color: #060b14; }
+    .cart-qty-btn {
+      background: #141f36;
+      color: #fff;
+      border: 1px solid var(--border-color);
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .cart-qty-btn:active { background: var(--accent-primary); color: #060b14; }
 
-        #toast_notice {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #10b981;
-            color: #ffffff;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-size: 13px;
-            font-weight: 700;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-            z-index: 9999;
-            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
-            opacity: 0;
-            pointer-events: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        #toast_notice.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
+    #toast_notice {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #10b981;
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      z-index: 9999;
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    #toast_notice.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
 
-        .debt-recalc-banner {
-            background: rgba(244,63,94,0.12);
-            border: 1px dashed rgba(244,63,94,0.4);
-            border-radius: var(--radius-md);
-            padding: 8px 12px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-        }
-    </style>
+    .debt-recalc-banner {
+      background: rgba(244,63,94,0.12);
+      border: 1px dashed rgba(244,63,94,0.4);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+  </style>
 </head>
 <body>
 
@@ -479,491 +479,491 @@
 <div id="toast_notice">✓ Товар добавлен в корзину</div>
 
 <header>
-    <div class="brand">
-        <img id="header_logo" class="brand-logo-img" src="logo.png" alt="DILBAR.LUXE">
-        <div id="header_brand_name">dilbar<span>.luxe</span></div>
-    </div>
-    <div class="header-actions">
-        <button class="btn-cart-nav" onclick="openCartModal()">
-            🛒 Корзина (<span id="cart_badge">0</span>)
-        </button>
-        <button class="btn-admin-login" onclick="promptAdminLogin()">🔒</button>
-    </div>
+  <div class="brand">
+    <img id="header_logo" class="brand-logo-img" src="logo.png" alt="DILBAR.LUXE">
+    <div id="header_brand_name">dilbar<span>.luxe</span></div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-cart-nav" onclick="openCartModal()">
+      🛒 Корзина (<span id="cart_badge">0</span>)
+    </button>
+    <button class="btn-admin-login" onclick="promptAdminLogin()">🔒</button>
+  </div>
 </header>
 
 <div class="container">
-    <div id="client_view">
-        <input type="text" id="catalog_search" class="search-input" placeholder="🔍 Поиск по названию, коду или цвету..." oninput="renderCatalog()">
-        <div id="catalog_grid" class="catalog-grid"></div>
+  <div id="client_view">
+    <input type="text" id="catalog_search" class="search-input" placeholder="🔍 Поиск по названию, коду или цвету..." oninput="renderCatalog()">
+    <div id="catalog_grid" class="catalog-grid"></div>
+  </div>
+
+  <div id="admin_view" class="admin-wrap">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
+      <h2 style="font-size: 18px; font-weight: 800;">⚙️ dilbar.luxe — Управление</h2>
+      <div style="display:flex; gap:6px;">
+        <button onclick="resetDashboardStats()" style="background:rgba(244,63,94,0.15); color:#f43f5e; border:1px solid rgba(244,63,94,0.3); padding:6px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">🔄 Обнулить счёт</button>
+        <input type="file" id="brand_logo_input" accept="image/*" style="display:none;" onchange="uploadBrandLogo(event)">
+        <button onclick="document.getElementById('brand_logo_input').click()" style="background:#141f36; color:var(--accent-primary); border:1px solid var(--border-color); padding:6px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">🖼️ Логотип</button>
+        <button onclick="exitAdmin()" style="background:#f43f5e; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">✕</button>
+      </div>
     </div>
 
-    <div id="admin_view" class="admin-wrap">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:8px;">
-            <h2 style="font-size: 18px; font-weight: 800;">⚙️ dilbar.luxe — Управление</h2>
-            <div style="display:flex; gap:6px;">
-                <button onclick="resetDashboardStats()" style="background:rgba(244,63,94,0.15); color:#f43f5e; border:1px solid rgba(244,63,94,0.3); padding:6px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">🔄 Обнулить счёт</button>
-                <input type="file" id="brand_logo_input" accept="image/*" style="display:none;" onchange="uploadBrandLogo(event)">
-                <button onclick="document.getElementById('brand_logo_input').click()" style="background:#141f36; color:var(--accent-primary); border:1px solid var(--border-color); padding:6px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">🖼️ Логотип</button>
-                <button onclick="exitAdmin()" style="background:#f43f5e; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">✕</button>
-            </div>
-        </div>
-
-        <div class="profit-dashboard">
-            <div class="profit-card">
-                <div class="profit-label">💵 Выручка</div>
-                <div id="dash_revenue" class="profit-val" style="color: var(--accent-primary);">0 ₸</div>
-            </div>
-            <div class="profit-card" style="border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.08);">
-                <div class="profit-label" style="color: #10b981;">🚀 Прибыль</div>
-                <div id="dash_net_profit" class="profit-val" style="color: #10b981;">0 ₸</div>
-            </div>
-            <div class="profit-card" style="border-color: rgba(244,63,94,0.4); background: rgba(244,63,94,0.08);">
-                <div class="profit-label" style="color: #f43f5e;">📝 Долги</div>
-                <div id="dash_total_debts" class="profit-val" style="color: #f43f5e;">0 ₸</div>
-            </div>
-            <div class="profit-card">
-                <div class="profit-label">📦 Склад</div>
-                <div id="dash_stock_cost" class="profit-val" style="color: #f59e0b;">0 ₸</div>
-            </div>
-        </div>
-
-        <div class="admin-nav">
-            <button class="admin-tab-btn active" onclick="switchAdminTab('st_tab', this)">📦 Склад</button>
-            <button class="admin-tab-btn" onclick="switchAdminTab('sa_tab', this)">💰 Продажи & Возвраты</button>
-            <button class="admin-tab-btn" onclick="switchAdminTab('db_tab', this)">📝 Должники</button>
-        </div>
-
-        <div id="st_tab" class="admin-subtab">
-            <form id="stock_form" onsubmit="addStockItem(event)" style="background:var(--bg-card); padding:12px; border-radius:10px; margin-bottom:16px; border:1px solid var(--border-color);">
-                <input type="hidden" id="edit_original_code" value="">
-
-                <div style="display:grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap:8px;">
-                    <input type="text" id="adm_code" class="input-field" placeholder="Код (Артикул)" required>
-                    <input type="text" id="adm_name" class="input-field" placeholder="Название товара" required>
-                    <input type="number" id="adm_buy" min="0" class="input-field" placeholder="Закуп (₸)" required>
-                    <input type="number" id="adm_sell" min="0" class="input-field" placeholder="Продажа (₸)" required>
-                </div>
-
-                <div style="margin-bottom:8px;">
-                    <label style="font-size:11px; font-weight:700; color:var(--text-muted);">Цвета (через запятую, например: Черный, Белый):</label>
-                    <input type="text" id="adm_colors_input" class="input-field" placeholder="Черный, Белый" oninput="generateAdminColorGrids()">
-                </div>
-
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                    <div style="font-size:11px; font-weight:700; color:var(--accent-primary);">Тип размеров:</div>
-                    <select id="size_category_select" class="input-field" style="width:auto; margin-bottom:0; padding:4px 8px;" onchange="generateAdminColorGrids()">
-                        <option value="adult">Взрослые (S — 3XL)</option>
-                        <option value="kids">Детские (1 — 8)</option>
-                    </select>
-                </div>
-
-                <div id="admin_color_grids_container"></div>
-
-                <div style="margin-top:4px;">
-                    <label style="font-size:11px; font-weight:700; color:var(--text-muted);">Фото товара (оставьте пустым, если не меняете):</label>
-                    <input type="file" id="adm_img" accept="image/*" class="input-field">
-                </div>
-
-                <div style="display:flex; gap:8px;">
-                    <button type="submit" id="btn_save_stock" style="background:var(--accent-primary); color:#060b14; border:none; padding:10px 16px; border-radius:6px; font-weight:800; cursor:pointer; font-size:13px; flex-grow:1;">+ Сохранить</button>
-                    <button type="button" id="btn_cancel_edit" onclick="cancelStockEdit()" style="display:none; background:#141f36; color:#cbd5e1; border:1px solid var(--border-color); padding:10px 16px; border-radius:6px; font-weight:700; cursor:pointer; font-size:13px;">✕ Отмена</button>
-                </div>
-            </form>
-
-            <div style="margin: 14px 0 10px 0;">
-                <input type="text" id="admin_stock_search" class="input-field" placeholder="🔍 Поиск товара на складе по коду, названию или цвету..." oninput="renderAdminStockTable()" style="margin-bottom: 0; padding: 10px 14px; background: var(--bg-card); font-size: 13px;">
-            </div>
-
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th>Фото</th><th>Код</th><th>Название</th><th>Остатки по цветам и размерам</th><th>Всего</th><th>Закуп</th><th>Продажа</th><th>Действия</th></tr></thead>
-                    <tbody id="admin_stock_body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <div id="sa_tab" class="admin-subtab" style="display:none;">
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th>Чек №</th><th>Клиент</th><th>Товар</th><th>Кол-во</th><th>Сумма</th><th>Прибыль</th><th>Оплата</th><th>Дата</th><th>Действие</th></tr></thead>
-                    <tbody id="admin_sales_body"></tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- ВКЛАДКА ДОЛЖНИКОВ -->
-        <div id="db_tab" class="admin-subtab" style="display:none;">
-            <form id="debt_form" onsubmit="handleDebtFormSubmit(event)" style="background:var(--bg-card); padding:12px; border-radius:10px; margin-bottom:14px; border:1px solid var(--border-color);">
-                <input type="hidden" id="edit_debt_index" value="-1">
-                <div id="debt_form_title" style="font-size:11px; font-weight:700; color:var(--accent-primary); margin-bottom:6px;">+ Добавить запись в долги:</div>
-                <div style="display:grid; grid-template-columns: 1.5fr 1.5fr 1fr 2fr auto auto; gap:8px;">
-                    <input type="text" id="adm_deb_name" class="input-field" placeholder="Имя клиента" required style="margin-bottom:0;">
-                    <input type="text" id="adm_deb_phone" class="input-field" placeholder="Телефон" required style="margin-bottom:0;">
-                    <input type="number" id="adm_deb_amount" class="input-field" placeholder="Сумма (₸)" required style="margin-bottom:0;">
-                    <input type="text" id="adm_deb_note" class="input-field" placeholder="Заметка (товары/причина)" style="margin-bottom:0;">
-                    <button type="submit" id="btn_save_debt" style="background:#f59e0b; color:#000; border:none; padding:8px 14px; border-radius:6px; font-weight:800; cursor:pointer; font-size:12px; white-space:nowrap;">+ Записать</button>
-                    <button type="button" id="btn_cancel_debt_edit" onclick="cancelDebtEdit()" style="display:none; background:#141f36; color:#cbd5e1; border:1px solid var(--border-color); padding:8px 12px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">✕ Отмена</button>
-                </div>
-            </form>
-
-            <div style="margin-bottom: 10px;">
-                <input type="text" id="admin_debt_search" class="input-field" placeholder="🔍 Поиск должника по имени, телефону или заметке..." oninput="renderAdminDebtsTable()" style="margin-bottom: 8px; padding: 10px 14px; background: var(--bg-card); font-size: 13px;">
-
-                <div class="debt-recalc-banner">
-                    <span>🧮 <b>Пересчёт по результатам поиска:</b> <span id="debt_search_count" style="color:var(--text-muted);">0 записей</span></span>
-                    <span style="font-size:14px; font-weight:800; color:#f43f5e;" id="debt_search_total">0 ₸</span>
-                </div>
-            </div>
-
-            <div style="overflow-x:auto;">
-                <table>
-                    <thead><tr><th>№</th><th>Клиент</th><th>Телефон</th><th>Сумма</th><th>Заметка (Товары)</th><th>Действия</th></tr></thead>
-                    <tbody id="admin_debts_body"></tbody>
-                </table>
-            </div>
-        </div>
+    <div class="profit-dashboard">
+      <div class="profit-card">
+        <div class="profit-label">💵 Выручка</div>
+        <div id="dash_revenue" class="profit-val" style="color: var(--accent-primary);">0 ₸</div>
+      </div>
+      <div class="profit-card" style="border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.08);">
+        <div class="profit-label" style="color: #10b981;">🚀 Прибыль</div>
+        <div id="dash_net_profit" class="profit-val" style="color: #10b981;">0 ₸</div>
+      </div>
+      <div class="profit-card" style="border-color: rgba(244,63,94,0.4); background: rgba(244,63,94,0.08);">
+        <div class="profit-label" style="color: #f43f5e;">📝 Долги</div>
+        <div id="dash_total_debts" class="profit-val" style="color: #f43f5e;">0 ₸</div>
+      </div>
+      <div class="profit-card">
+        <div class="profit-label">📦 Склад</div>
+        <div id="dash_stock_cost" class="profit-val" style="color: #f59e0b;">0 ₸</div>
+      </div>
     </div>
+
+    <div class="admin-nav">
+      <button class="admin-tab-btn active" onclick="switchAdminTab('st_tab', this)">📦 Склад</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('sa_tab', this)">💰 Продажи & Возвраты</button>
+      <button class="admin-tab-btn" onclick="switchAdminTab('db_tab', this)">📝 Должники</button>
+    </div>
+
+    <div id="st_tab" class="admin-subtab">
+      <form id="stock_form" onsubmit="addStockItem(event)" style="background:var(--bg-card); padding:12px; border-radius:10px; margin-bottom:16px; border:1px solid var(--border-color);">
+        <input type="hidden" id="edit_original_code" value="">
+
+        <div style="display:grid; grid-template-columns: 1fr 2fr 1fr 1fr; gap:8px;">
+          <input type="text" id="adm_code" class="input-field" placeholder="Код (Артикул)" required>
+          <input type="text" id="adm_name" class="input-field" placeholder="Название товара" required>
+          <input type="number" id="adm_buy" min="0" class="input-field" placeholder="Закуп (₸)" required>
+          <input type="number" id="adm_sell" min="0" class="input-field" placeholder="Продажа (₸)" required>
+        </div>
+
+        <div style="margin-bottom:8px;">
+          <label style="font-size:11px; font-weight:700; color:var(--text-muted);">Цвета (через запятую, например: Черный, Белый):</label>
+          <input type="text" id="adm_colors_input" class="input-field" placeholder="Черный, Белый" oninput="generateAdminColorGrids()">
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <div style="font-size:11px; font-weight:700; color:var(--accent-primary);">Тип размеров:</div>
+          <select id="size_category_select" class="input-field" style="width:auto; margin-bottom:0; padding:4px 8px;" onchange="generateAdminColorGrids()">
+            <option value="adult">Взрослые (S — 3XL)</option>
+            <option value="kids">Детские (1 — 8)</option>
+          </select>
+        </div>
+
+        <div id="admin_color_grids_container"></div>
+
+        <div style="margin-top:4px;">
+          <label style="font-size:11px; font-weight:700; color:var(--text-muted);">Фото товара (оставьте пустым, если не меняете):</label>
+          <input type="file" id="adm_img" accept="image/*" class="input-field">
+        </div>
+
+        <div style="display:flex; gap:8px;">
+          <button type="submit" id="btn_save_stock" style="background:var(--accent-primary); color:#060b14; border:none; padding:10px 16px; border-radius:6px; font-weight:800; cursor:pointer; font-size:13px; flex-grow:1;">+ Сохранить</button>
+          <button type="button" id="btn_cancel_edit" onclick="cancelStockEdit()" style="display:none; background:#141f36; color:#cbd5e1; border:1px solid var(--border-color); padding:10px 16px; border-radius:6px; font-weight:700; cursor:pointer; font-size:13px;">✕ Отмена</button>
+        </div>
+      </form>
+
+      <div style="margin: 14px 0 10px 0;">
+        <input type="text" id="admin_stock_search" class="input-field" placeholder="🔍 Поиск товара на складе по коду, названию или цвету..." oninput="renderAdminStockTable()" style="margin-bottom: 0; padding: 10px 14px; background: var(--bg-card); font-size: 13px;">
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Фото</th><th>Код</th><th>Название</th><th>Остатки по цветам и размерам</th><th>Всего</th><th>Закуп</th><th>Продажа</th><th>Действия</th></tr></thead>
+          <tbody id="admin_stock_body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="sa_tab" class="admin-subtab" style="display:none;">
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>Чек №</th><th>Клиент</th><th>Товар</th><th>Кол-во</th><th>Сумма</th><th>Прибыль</th><th>Оплата</th><th>Дата</th><th>Действие</th></tr></thead>
+          <tbody id="admin_sales_body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ВКЛАДКА ДОЛЖНИКОВ -->
+    <div id="db_tab" class="admin-subtab" style="display:none;">
+      <form id="debt_form" onsubmit="handleDebtFormSubmit(event)" style="background:var(--bg-card); padding:12px; border-radius:10px; margin-bottom:14px; border:1px solid var(--border-color);">
+        <input type="hidden" id="edit_debt_index" value="-1">
+        <div id="debt_form_title" style="font-size:11px; font-weight:700; color:var(--accent-primary); margin-bottom:6px;">+ Добавить запись в долги:</div>
+        <div style="display:grid; grid-template-columns: 1.5fr 1.5fr 1fr 2fr auto auto; gap:8px;">
+          <input type="text" id="adm_deb_name" class="input-field" placeholder="Имя клиента" required style="margin-bottom:0;">
+          <input type="text" id="adm_deb_phone" class="input-field" placeholder="Телефон" required style="margin-bottom:0;">
+          <input type="number" id="adm_deb_amount" class="input-field" placeholder="Сумма (₸)" required style="margin-bottom:0;">
+          <input type="text" id="adm_deb_note" class="input-field" placeholder="Заметка (товары/причина)" style="margin-bottom:0;">
+          <button type="submit" id="btn_save_debt" style="background:#f59e0b; color:#000; border:none; padding:8px 14px; border-radius:6px; font-weight:800; cursor:pointer; font-size:12px; white-space:nowrap;">+ Записать</button>
+          <button type="button" id="btn_cancel_debt_edit" onclick="cancelDebtEdit()" style="display:none; background:#141f36; color:#cbd5e1; border:1px solid var(--border-color); padding:8px 12px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px;">✕ Отмена</button>
+        </div>
+      </form>
+
+      <div style="margin-bottom: 10px;">
+        <input type="text" id="admin_debt_search" class="input-field" placeholder="🔍 Поиск должника по имени, телефону или заметке..." oninput="renderAdminDebtsTable()" style="margin-bottom: 8px; padding: 10px 14px; background: var(--bg-card); font-size: 13px;">
+
+        <div class="debt-recalc-banner">
+          <span>🧮 <b>Пересчёт по результатам поиска:</b> <span id="debt_search_count" style="color:var(--text-muted);">0 записей</span></span>
+          <span style="font-size:14px; font-weight:800; color:#f43f5e;" id="debt_search_total">0 ₸</span>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table>
+          <thead><tr><th>№</th><th>Клиент</th><th>Телефон</th><th>Сумма</th><th>Заметка (Товары)</th><th>Действия</th></tr></thead>
+          <tbody id="admin_debts_body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- МОДАЛЬНОЕ ОКНО ОБМЕНА И ДОБАВЛЕНИЯ ТОВАРОВ В ДОЛГ -->
 <div id="debt_exchange_modal" class="modal">
-    <div class="modal-content" style="max-width: 500px; text-align: left;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <div>
-                <h3 style="font-size:16px; color:#f8fafc;">🔄 Обмен и Корректировка долга</h3>
-                <small id="exchange_client_name" style="color:var(--accent-primary); font-weight:700;"></small>
-            </div>
-            <button onclick="closeModal('debt_exchange_modal')" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
-        </div>
-
-        <div style="background:#060b14; padding:10px; border-radius:10px; border:1px solid var(--border-color); margin-bottom:12px;">
-            <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-bottom:4px;">1. Товары в данном чеке / долге:</div>
-            <div id="exchange_items_list" style="max-height:140px; overflow-y:auto; font-size:12px;"></div>
-        </div>
-
-        <div style="background:#060b14; padding:10px; border-radius:10px; border:1px solid var(--border-color); margin-bottom:14px;">
-            <div style="font-size:11px; color:var(--accent-green); font-weight:700; margin-bottom:6px;">2. + Добавить товар со склада взамен:</div>
-            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:6px; margin-bottom:6px;">
-                <select id="exch_prod_select" class="input-field" style="margin-bottom:0; font-size:11px;" onchange="updateExchVariantOptions()"></select>
-                <select id="exch_variant_select" class="input-field" style="margin-bottom:0; font-size:11px;"></select>
-                <button type="button" onclick="addExchProductToDebt()" style="background:var(--accent-green); color:#fff; border:none; border-radius:6px; font-weight:800; font-size:12px; cursor:pointer;">+ Добавить</button>
-            </div>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-size:15px; font-weight:800;">
-            <span>ИТОГОВАЯ СУММА ДОЛГА:</span>
-            <span id="exchange_new_total" style="color:#f43f5e; font-size:18px;">0 ₸</span>
-        </div>
-
-        <button class="btn-action-main" onclick="saveDebtExchange()">💾 Сохранить изменения</button>
+  <div class="modal-content" style="max-width: 500px; text-align: left;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+      <div>
+        <h3 style="font-size:16px; color:#f8fafc;">🔄 Обмен и Корректировка долга</h3>
+        <small id="exchange_client_name" style="color:var(--accent-primary); font-weight:700;"></small>
+      </div>
+      <button onclick="closeModal('debt_exchange_modal')" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
     </div>
+
+    <div style="background:#060b14; padding:10px; border-radius:10px; border:1px solid var(--border-color); margin-bottom:12px;">
+      <div style="font-size:11px; color:var(--text-muted); font-weight:700; margin-bottom:4px;">1. Товары в данном чеке / долге:</div>
+      <div id="exchange_items_list" style="max-height:140px; overflow-y:auto; font-size:12px;"></div>
+    </div>
+
+    <div style="background:#060b14; padding:10px; border-radius:10px; border:1px solid var(--border-color); margin-bottom:14px;">
+      <div style="font-size:11px; color:var(--accent-green); font-weight:700; margin-bottom:6px;">2. + Добавить товар со склада взамен:</div>
+      <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:6px; margin-bottom:6px;">
+        <select id="exch_prod_select" class="input-field" style="margin-bottom:0; font-size:11px;" onchange="updateExchVariantOptions()"></select>
+        <select id="exch_variant_select" class="input-field" style="margin-bottom:0; font-size:11px;"></select>
+        <button type="button" onclick="addExchProductToDebt()" style="background:var(--accent-green); color:#fff; border:none; border-radius:6px; font-weight:800; font-size:12px; cursor:pointer;">+ Добавить</button>
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; font-size:15px; font-weight:800;">
+      <span>ИТОГОВАЯ СУММА ДОЛГА:</span>
+      <span id="exchange_new_total" style="color:#f43f5e; font-size:18px;">0 ₸</span>
+    </div>
+
+    <button class="btn-action-main" onclick="saveDebtExchange()">💾 Сохранить изменения</button>
+  </div>
 </div>
 
 <div id="image_modal" class="modal" onclick="closeModal('image_modal')">
-    <div class="image-viewer-content" onclick="event.stopPropagation()">
-        <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-            <span id="image_modal_title" style="font-size:14px; font-weight:700; color:var(--accent-primary);"></span>
-            <button onclick="closeModal('image_modal')" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
-        </div>
-        <img id="image_modal_src" src="" alt="Фото товара">
+  <div class="image-viewer-content" onclick="event.stopPropagation()">
+    <div style="width:100%; display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <span id="image_modal_title" style="font-size:14px; font-weight:700; color:var(--accent-primary);"></span>
+      <button onclick="closeModal('image_modal')" style="background:none; border:none; color:#fff; font-size:18px; cursor:pointer;">✕</button>
     </div>
+    <img id="image_modal_src" src="" alt="Фото товара">
+  </div>
 </div>
 
 <div id="cart_modal" class="modal">
-    <div class="modal-content">
-        <h3 style="margin-bottom:12px; font-size:16px;">🛒 Корзина dilbar.luxe</h3>
-        <div id="cart_items_list" style="text-align:left; max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
-        <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; margin:12px 0;">
-            <span>ИТОГО:</span>
-            <span id="cart_total_price" style="color:var(--accent-primary);">0 ₸</span>
-        </div>
-        <button class="btn-action-main" onclick="openCheckoutModal()">ОФОРМИТЬ ЗАКАЗ ➔</button>
-        <button onclick="closeModal('cart_modal')" style="background:transparent; border:none; color:var(--text-muted); margin-top:10px; cursor:pointer; font-size:12px;">Закрыть</button>
+  <div class="modal-content">
+    <h3 style="margin-bottom:12px; font-size:16px;">🛒 Корзина dilbar.luxe</h3>
+    <div id="cart_items_list" style="text-align:left; max-height:220px; overflow-y:auto; margin-bottom:10px;"></div>
+    <div style="display:flex; justify-content:space-between; font-size:16px; font-weight:800; margin:12px 0;">
+      <span>ИТОГО:</span>
+      <span id="cart_total_price" style="color:var(--accent-primary);">0 ₸</span>
     </div>
+    <button class="btn-action-main" onclick="openCheckoutModal()">ОФОРМИТЬ ЗАКАЗ ➔</button>
+    <button onclick="closeModal('cart_modal')" style="background:transparent; border:none; color:var(--text-muted); margin-top:10px; cursor:pointer; font-size:12px;">Закрыть</button>
+  </div>
 </div>
 
 <div id="checkout_modal" class="modal">
-    <div class="modal-content">
-        <div style="font-size:11px; color:var(--accent-primary); font-weight:700; text-transform:uppercase;">Оформление заказа</div>
-        <div id="checkout_amount" style="font-size:28px; font-weight:800; color:var(--accent-primary); margin:4px 0;">0 ₸</div>
+  <div class="modal-content">
+    <div style="font-size:11px; color:var(--accent-primary); font-weight:700; text-transform:uppercase;">Оформление заказа</div>
+    <div id="checkout_amount" style="font-size:28px; font-weight:800; color:var(--accent-primary); margin:4px 0;">0 ₸</div>
 
-        <div style="text-align:left; margin-top:8px;">
-            <label style="font-size:11px; color:var(--text-muted); font-weight:700;">Имя и Фамилия:</label>
-            <input type="text" id="cust_name" class="input-field" placeholder="Алина Каримова" required>
+    <div style="text-align:left; margin-top:8px;">
+      <label style="font-size:11px; color:var(--text-muted); font-weight:700;">Имя и Фамилия:</label>
+      <input type="text" id="cust_name" class="input-field" placeholder="Алина Каримова" required>
 
-            <label style="font-size:11px; color:var(--text-muted); font-weight:700;">Телефон (WhatsApp):</label>
-            <input type="tel" id="cust_phone" class="input-field" placeholder="+7 700 000 00 00" required>
+      <label style="font-size:11px; color:var(--text-muted); font-weight:700;">Телефон (WhatsApp):</label>
+      <input type="tel" id="cust_phone" class="input-field" placeholder="+7 700 000 00 00" required>
 
-            <label style="font-size:11px; color:var(--text-muted); font-weight:700;">Оплата:</label>
-            <select id="checkout_bank" class="input-field" onchange="toggleTransferInfo()">
-                <option value="Kaspi">🔴 Kaspi перевод</option>
-                <option value="Halyk">🟢 Народный (Halyk)</option>
-                <option value="БЦК">🔵 БЦК (BCC)</option>
-                <option value="Наличные">💵 Наличные продавцу</option>
-                <option value="В долг">📝 В долг</option>
-            </select>
-        </div>
-
-        <div id="transfer_info_box" class="phone-transfer-card">
-            <span class="phone-val">87066061525</span>
-            <button onclick="copyPhone()" style="background:var(--accent-primary); color:#060b14; border:none; padding:5px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">📋 Скопировать</button>
-        </div>
-
-        <button class="btn-action-main" onclick="completeClientOrder()">✅ ПОДТВЕРДИТЬ</button>
-        <button onclick="closeModal('checkout_modal')" style="background:transparent; border:none; color:var(--text-muted); margin-top:8px; cursor:pointer; font-size:12px;">✕ Отмена</button>
+      <label style="font-size:11px; color:var(--text-muted); font-weight:700;">Оплата:</label>
+      <select id="checkout_bank" class="input-field" onchange="toggleTransferInfo()">
+        <option value="Kaspi">🔴 Kaspi перевод</option>
+        <option value="Halyk">🟢 Народный (Halyk)</option>
+        <option value="БЦК">🔵 БЦК (BCC)</option>
+        <option value="Наличные">💵 Наличные продавцу</option>
+        <option value="В долг">📝 В долг</option>
+      </select>
     </div>
+
+    <div id="transfer_info_box" class="phone-transfer-card">
+      <span class="phone-val">87066061525</span>
+      <button onclick="copyPhone()" style="background:var(--accent-primary); color:#060b14; border:none; padding:5px 10px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">📋 Скопировать</button>
+    </div>
+
+    <button class="btn-action-main" onclick="completeClientOrder()">✅ ПОДТВЕРДИТЬ</button>
+    <button onclick="closeModal('checkout_modal')" style="background:transparent; border:none; color:var(--text-muted); margin-top:8px; cursor:pointer; font-size:12px;">✕ Отмена</button>
+  </div>
 </div>
 
 <div id="receipt_modal" class="modal">
-    <div class="modal-content">
-        <h3 style="color:#10b981; font-size:16px;">🎉 Заказ оформлен!</h3>
-        <div id="receipt_content" class="receipt-card"></div>
-        <a id="whatsapp_btn" href="#" target="_blank" class="btn-whatsapp">
-            📲 Отправить чек в WhatsApp
-        </a>
-        <button onclick="closeModal('receipt_modal')" style="background:#141f36; color:#fff; border:1px solid var(--border-color); padding:8px; border-radius:8px; font-weight:700; width:100%; margin-top:8px; cursor:pointer; font-size:12px;">
-            Готово
-        </button>
-    </div>
+  <div class="modal-content">
+    <h3 style="color:#10b981; font-size:16px;">🎉 Заказ оформлен!</h3>
+    <div id="receipt_content" class="receipt-card"></div>
+    <a id="whatsapp_btn" href="#" target="_blank" class="btn-whatsapp">
+      📲 Отправить чек в WhatsApp
+    </a>
+    <button onclick="closeModal('receipt_modal')" style="background:#141f36; color:#fff; border:1px solid var(--border-color); padding:8px; border-radius:8px; font-weight:700; width:100%; margin-top:8px; cursor:pointer; font-size:12px;">
+      Готово
+    </button>
+  </div>
 </div>
 
 <script>
-    const DEFAULT_LOGO = "logo.png";
-    const ADMIN_PIN = "14082018";
-    const PAYMENT_PHONE = "87066061525";
-    const WHATSAPP_PHONE = "77013568860";
+  const DEFAULT_LOGO = "logo.png";
+  const ADMIN_PIN = "14082018";
+  const PAYMENT_PHONE = "87066061525";
+  const WHATSAPP_PHONE = "77013568860";
 
-    const ADULT_SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
-    const KIDS_SIZES = ['1', '2', '3', '4', '5', '6', '7', '8'];
+  const ADULT_SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
+  const KIDS_SIZES = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCq9cO-pkC37fqRkcBLCPbnKWUzIKvZvPA",
-        authDomain: "dilbarluxe.firebaseapp.com",
-        projectId: "dilbarluxe",
-        storageBucket: "dilbarluxe.firebasestorage.app",
-        messagingSenderId: "168275361312",
-        appId: "1:168275361312:web:48ecd2e65bfb2ca6fac645",
-        measurementId: "G-ML83HHLBJN"
+  const firebaseConfig = {
+    apiKey: "AIzaSyCq9cO-pkC37fqRkcBLCPbnKWUzIKvZvPA",
+    authDomain: "dilbarluxe.firebaseapp.com",
+    projectId: "dilbarluxe",
+    storageBucket: "dilbarluxe.firebasestorage.app",
+    messagingSenderId: "168275361312",
+    appId: "1:168275361312:web:48ecd2e65bfb2ca6fac645",
+    measurementId: "G-ML83HHLBJN"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const firestoreDb = firebase.firestore();
+  const storeDoc = firestoreDb.collection("store").doc("main_data");
+
+  let db = { stock: [], sales: [], debts: [] };
+  let cart = [];
+  let selectedColorState = {};
+  let selectedSizeState = {};
+  let currentExchDebtIdx = -1;
+  let tempExchSales = [];
+
+  storeDoc.onSnapshot((doc) => {
+    if (doc.exists) {
+      db = doc.data();
+      if (!db.stock) db.stock = [];
+      if (!db.sales) db.sales = [];
+      if (!db.debts) db.debts = [];
+    } else {
+      save();
+    }
+    renderCatalog();
+    renderAdmin();
+  }, (error) => {
+    console.error("Ошибка синхронизации:", error);
+  });
+
+  function save() {
+    storeDoc.set(db).catch((err) => console.error("Ошибка сохранения в базу:", err));
+    renderCatalog();
+    renderAdmin();
+  }
+
+  function initBranding() {
+    const savedLogo = localStorage.getItem('brand_logo_img') || DEFAULT_LOGO;
+    const hLogo = document.getElementById('header_logo');
+    const bgLogo = document.getElementById('bg_watermark');
+    if (hLogo) hLogo.src = savedLogo;
+    if (bgLogo) bgLogo.src = savedLogo;
+  }
+
+  function uploadBrandLogo(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      localStorage.setItem('brand_logo_img', event.target.result);
+      initBranding();
+      showToast("Логотип бренда успешно обновлен!");
     };
+    reader.readAsDataURL(file);
+  }
 
-    firebase.initializeApp(firebaseConfig);
-    const firestoreDb = firebase.firestore();
-    const storeDoc = firestoreDb.collection("store").doc("main_data");
+  function showToast(text) {
+    const t = document.getElementById('toast_notice');
+    t.innerText = `✓ ${text}`;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
 
-    let db = { stock: [], sales: [], debts: [] };
-    let cart = [];
-    let selectedColorState = {};
-    let selectedSizeState = {};
-    let currentExchDebtIdx = -1;
-    let tempExchSales = [];
+  function getNormalizedVariants(item) {
+    if (item.variants && typeof item.variants === 'object' && Object.keys(item.variants).length > 0) {
+      return item.variants;
+    }
+    const defaultColor = item.color || "Основной";
+    return { [defaultColor]: item.sizes || {} };
+  }
 
-    storeDoc.onSnapshot((doc) => {
-        if (doc.exists) {
-            db = doc.data();
-            if (!db.stock) db.stock = [];
-            if (!db.sales) db.sales = [];
-            if (!db.debts) db.debts = [];
-        } else {
-            save();
-        }
-        renderCatalog();
-        renderAdmin();
-    }, (error) => {
-        console.error("Ошибка синхронизации:", error);
+  function getItemTotalQuantity(item) {
+    const vars = getNormalizedVariants(item);
+    let total = 0;
+    Object.values(vars).forEach(sizesObj => {
+      Object.values(sizesObj || {}).forEach(q => total += Number(q || 0));
     });
+    return total;
+  }
 
-    function save() {
-        storeDoc.set(db).catch((err) => console.error("Ошибка сохранения в базу:", err));
-        renderCatalog();
-        renderAdmin();
-    }
+  function generateAdminColorGrids(existingVariants = null) {
+    const rawColors = document.getElementById('adm_colors_input').value;
+    const sizeType = document.getElementById('size_category_select').value;
+    const sizeList = sizeType === 'adult' ? ADULT_SIZES : KIDS_SIZES;
+    const gridClass = sizeType === 'adult' ? 'grid-adult' : 'grid-kids';
 
-    function initBranding() {
-        const savedLogo = localStorage.getItem('brand_logo_img') || DEFAULT_LOGO;
-        const hLogo = document.getElementById('header_logo');
-        const bgLogo = document.getElementById('bg_watermark');
-        if (hLogo) hLogo.src = savedLogo;
-        if (bgLogo) bgLogo.src = savedLogo;
-    }
+    let colors = rawColors.split(',').map(c => c.trim()).filter(c => c.length > 0);
+    if (colors.length === 0) colors = ['Основной'];
 
-    function uploadBrandLogo(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            localStorage.setItem('brand_logo_img', event.target.result);
-            initBranding();
-            showToast("Логотип бренда успешно обновлен!");
-        };
-        reader.readAsDataURL(file);
-    }
+    const container = document.getElementById('admin_color_grids_container');
+    container.innerHTML = '';
 
-    function showToast(text) {
-        const t = document.getElementById('toast_notice');
-        t.innerText = `✓ ${text}`;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2000);
-    }
-
-    function getNormalizedVariants(item) {
-        if (item.variants && typeof item.variants === 'object' && Object.keys(item.variants).length > 0) {
-            return item.variants;
-        }
-        const defaultColor = item.color || "Основной";
-        return { [defaultColor]: item.sizes || {} };
-    }
-
-    function getItemTotalQuantity(item) {
-        const vars = getNormalizedVariants(item);
-        let total = 0;
-        Object.values(vars).forEach(sizesObj => {
-            Object.values(sizesObj || {}).forEach(q => total += Number(q || 0));
-        });
-        return total;
-    }
-
-    function generateAdminColorGrids(existingVariants = null) {
-        const rawColors = document.getElementById('adm_colors_input').value;
-        const sizeType = document.getElementById('size_category_select').value;
-        const sizeList = sizeType === 'adult' ? ADULT_SIZES : KIDS_SIZES;
-        const gridClass = sizeType === 'adult' ? 'grid-adult' : 'grid-kids';
-
-        let colors = rawColors.split(',').map(c => c.trim()).filter(c => c.length > 0);
-        if (colors.length === 0) colors = ['Основной'];
-
-        const container = document.getElementById('admin_color_grids_container');
-        container.innerHTML = '';
-
-        colors.forEach((color) => {
-            const block = document.createElement('div');
-            block.style.marginBottom = '10px';
-            block.innerHTML = `
+    colors.forEach((color) => {
+      const block = document.createElement('div');
+      block.style.marginBottom = '10px';
+      block.innerHTML = `
                 <div style="font-size:11px; font-weight:800; color:var(--accent-primary); margin-bottom:4px;">
                     🎨 Цвет: ${color}
                 </div>
                 <div class="sizes-input-grid ${gridClass}">
                     ${sizeList.map(sz => {
-                const val = existingVariants?.[color]?.[sz] !== undefined ? existingVariants[color][sz] : 0;
-                return `<div>${sz}<input type="number" min="0" value="${val}" class="input-field" data-color="${color}" data-size="${sz}"></div>`;
-            }).join('')}
+        const val = existingVariants?.[color]?.[sz] !== undefined ? existingVariants[color][sz] : 0;
+        return `<div>${sz}<input type="number" min="0" value="${val}" class="input-field" data-color="${color}" data-size="${sz}"></div>`;
+      }).join('')}
                 </div>
             `;
-            container.appendChild(block);
-        });
+      container.appendChild(block);
+    });
+  }
+
+  function resetDashboardStats() {
+    const pin = prompt("Для обнуления статистики введите PIN администратора:");
+    if (pin !== ADMIN_PIN) {
+      if (pin !== null) alert("❌ Неверный PIN!");
+      return;
     }
 
-    function resetDashboardStats() {
-        const pin = prompt("Для обнуления статистики введите PIN администратора:");
-        if (pin !== ADMIN_PIN) {
-            if (pin !== null) alert("❌ Неверный PIN!");
-            return;
-        }
-
-        const choice = prompt(
+    const choice = prompt(
             "Выберите вариант обнуления:\n\n1 — Обнулить только продажи и прибыль (выручка станет 0 ₸, товары останутся)\n2 — Полный сброс (удалить все продажи, должников и склад)",
             "1"
-        );
+    );
 
-        if (choice === "1") {
-            db.sales = [];
-            save();
-            alert("✅ Выручка и чистая прибыль успешно сброшены в 0 ₸!");
-        } else if (choice === "2") {
-            const confirmFull = confirm("Вы уверены? Это удалит все товары, продажи и долги без возможности восстановления.");
-            if (confirmFull) {
-                db.stock = [];
-                db.sales = [];
-                db.debts = [];
-                save();
-                alert("✅ База данных полностью очищена!");
-            }
-        }
+    if (choice === "1") {
+      db.sales = [];
+      save();
+      alert("✅ Выручка и чистая прибыль успешно сброшены в 0 ₸!");
+    } else if (choice === "2") {
+      const confirmFull = confirm("Вы уверены? Это удалит все товары, продажи и долги без возможности восстановления.");
+      if (confirmFull) {
+        db.stock = [];
+        db.sales = [];
+        db.debts = [];
+        save();
+        alert("✅ База данных полностью очищена!");
+      }
+    }
+  }
+
+  function selectCatalogColor(code, color) {
+    selectedColorState[code] = color;
+    delete selectedSizeState[code];
+    renderCatalog();
+  }
+
+  function selectCatalogSize(code, size) {
+    selectedSizeState[code] = size;
+    renderCatalog();
+  }
+
+  function toggleTransferInfo() {
+    const val = document.getElementById('checkout_bank').value;
+    document.getElementById('transfer_info_box').style.display = (val === 'Наличные' || val === 'В долг') ? 'none' : 'flex';
+  }
+
+  function openImageViewer(src, title) {
+    document.getElementById('image_modal_src').src = src || DEFAULT_LOGO;
+    document.getElementById('image_modal_title').innerText = title || 'dilbar.luxe';
+    document.getElementById('image_modal').classList.add('active');
+  }
+
+  function renderCatalog() {
+    const q = (document.getElementById('catalog_search')?.value || '').toLowerCase();
+    const grid = document.getElementById('catalog_grid');
+    grid.innerHTML = '';
+
+    const items = db.stock.filter(i => {
+      const vars = getNormalizedVariants(i);
+      const colorNames = Object.keys(vars).join(' ').toLowerCase();
+      return i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q) || colorNames.includes(q);
+    });
+
+    if (items.length === 0) {
+      grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94a3b8; padding:40px 0; font-size:13px;">В коллекции пока нет добавленных товаров</div>';
+      return;
     }
 
-    function selectCatalogColor(code, color) {
-        selectedColorState[code] = color;
-        delete selectedSizeState[code];
-        renderCatalog();
-    }
+    items.forEach(item => {
+      const variants = getNormalizedVariants(item);
+      const colorsList = Object.keys(variants);
 
-    function selectCatalogSize(code, size) {
-        selectedSizeState[code] = size;
-        renderCatalog();
-    }
+      if (!selectedColorState[item.code] || !colorsList.includes(selectedColorState[item.code])) {
+        const colorWithStock = colorsList.find(c => Object.values(variants[c] || {}).some(q => q > 0));
+        selectedColorState[item.code] = colorWithStock || colorsList[0];
+      }
 
-    function toggleTransferInfo() {
-        const val = document.getElementById('checkout_bank').value;
-        document.getElementById('transfer_info_box').style.display = (val === 'Наличные' || val === 'В долг') ? 'none' : 'flex';
-    }
+      const activeColor = selectedColorState[item.code];
+      const activeColorSizes = variants[activeColor] || {};
+      const sizesList = Object.keys(activeColorSizes);
 
-    function openImageViewer(src, title) {
-        document.getElementById('image_modal_src').src = src || DEFAULT_LOGO;
-        document.getElementById('image_modal_title').innerText = title || 'dilbar.luxe';
-        document.getElementById('image_modal').classList.add('active');
-    }
+      if (!selectedSizeState[item.code] || !sizesList.includes(selectedSizeState[item.code])) {
+        const sizeWithStock = sizesList.find(s => (activeColorSizes[s] || 0) > 0);
+        selectedSizeState[item.code] = sizeWithStock || sizesList[0] || 'S';
+      }
 
-    function renderCatalog() {
-        const q = (document.getElementById('catalog_search')?.value || '').toLowerCase();
-        const grid = document.getElementById('catalog_grid');
-        grid.innerHTML = '';
+      const activeSize = selectedSizeState[item.code];
+      const activeSizeQty = activeColorSizes[activeSize] || 0;
+      const imgSrc = item.img || DEFAULT_LOGO;
 
-        const items = db.stock.filter(i => {
-            const vars = getNormalizedVariants(i);
-            const colorNames = Object.keys(vars).join(' ').toLowerCase();
-            return i.name.toLowerCase().includes(q) || i.code.toLowerCase().includes(q) || colorNames.includes(q);
-        });
+      const card = document.createElement('div');
+      card.className = 'product-card';
 
-        if (items.length === 0) {
-            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:#94a3b8; padding:40px 0; font-size:13px;">В коллекции пока нет добавленных товаров</div>';
-            return;
-        }
-
-        items.forEach(item => {
-            const variants = getNormalizedVariants(item);
-            const colorsList = Object.keys(variants);
-
-            if (!selectedColorState[item.code] || !colorsList.includes(selectedColorState[item.code])) {
-                const colorWithStock = colorsList.find(c => Object.values(variants[c] || {}).some(q => q > 0));
-                selectedColorState[item.code] = colorWithStock || colorsList[0];
-            }
-
-            const activeColor = selectedColorState[item.code];
-            const activeColorSizes = variants[activeColor] || {};
-            const sizesList = Object.keys(activeColorSizes);
-
-            if (!selectedSizeState[item.code] || !sizesList.includes(selectedSizeState[item.code])) {
-                const sizeWithStock = sizesList.find(s => (activeColorSizes[s] || 0) > 0);
-                selectedSizeState[item.code] = sizeWithStock || sizesList[0] || 'S';
-            }
-
-            const activeSize = selectedSizeState[item.code];
-            const activeSizeQty = activeColorSizes[activeSize] || 0;
-            const imgSrc = item.img || DEFAULT_LOGO;
-
-            const card = document.createElement('div');
-            card.className = 'product-card';
-
-            const colorsHtml = colorsList.map(c => `
+      const colorsHtml = colorsList.map(c => `
                 <button class="color-pill-btn ${activeColor === c ? 'active' : ''}"
                         onclick="selectCatalogColor('${item.code}', '${c}')">
                     ${c}
                 </button>
             `).join('');
 
-            const sizesHtml = sizesList.map(sz => {
-                const qty = activeColorSizes[sz] || 0;
-                const isDis = qty <= 0;
-                const isAct = activeSize === sz;
-                return `
+      const sizesHtml = sizesList.map(sz => {
+        const qty = activeColorSizes[sz] || 0;
+        const isDis = qty <= 0;
+        const isAct = activeSize === sz;
+        return `
                     <button class="size-btn ${isAct ? 'active' : ''} ${isDis ? 'disabled' : ''}"
                             onclick="selectCatalogSize('${item.code}', '${sz}')"
                             ${isDis ? 'disabled' : ''}>
                         ${sz} (${qty})
                     </button>
                 `;
-            }).join('');
+      }).join('');
 
-            card.innerHTML = `
+      card.innerHTML = `
                 <div class="product-img-box" onclick="openImageViewer('${imgSrc}', '${item.name.replace(/'/g, "\\'")}')">
                     <span class="product-badge-code">АРТ: ${item.code}</span>
                     <img src="${imgSrc}" alt="${item.name}">
@@ -990,89 +990,89 @@
                     </button>
                 </div>
             `;
-            grid.appendChild(card);
-        });
+      grid.appendChild(card);
+    });
+  }
+
+  function addToCart(code) {
+    const item = db.stock.find(i => i.code.toLowerCase() === code.toLowerCase());
+    const color = selectedColorState[code];
+    const size = selectedSizeState[code];
+    if (!item || !color || !size) return;
+
+    const variants = getNormalizedVariants(item);
+    const maxQty = variants[color]?.[size] || 0;
+    if (maxQty <= 0) return;
+
+    const cartKey = `${item.code}_${color}_${size}`;
+    const inCart = cart.find(c => c.cartKey === cartKey);
+
+    if (inCart) {
+      if (inCart.qty < maxQty) {
+        inCart.qty++;
+        showToast(`Добавлено: ${item.name} (${inCart.qty} шт)`);
+      } else {
+        alert(`Достигнут максимум в наличии: ${maxQty} шт!`);
+        return;
+      }
+    } else {
+      cart.push({
+        cartKey,
+        code: item.code,
+        name: item.name,
+        color: color,
+        size: size,
+        buyPrice: item.buyPrice,
+        sellPrice: item.sellPrice,
+        qty: 1
+      });
+      showToast(`В корзине: ${item.name} [${size}]`);
+    }
+    updateCartBadge();
+  }
+
+  function updateCartBadge() {
+    const count = cart.reduce((s, i) => s + i.qty, 0);
+    document.getElementById('cart_badge').innerText = count;
+  }
+
+  function changeCartItemQty(idx, delta) {
+    const c = cart[idx];
+    if (!c) return;
+
+    const st = db.stock.find(i => i.code.toLowerCase() === c.code.toLowerCase());
+    const vars = st ? getNormalizedVariants(st) : {};
+    const maxQty = vars[c.color]?.[c.size] || 999;
+
+    const newQty = c.qty + delta;
+    if (newQty <= 0) {
+      removeFromCart(idx);
+      return;
     }
 
-    function addToCart(code) {
-        const item = db.stock.find(i => i.code.toLowerCase() === code.toLowerCase());
-        const color = selectedColorState[code];
-        const size = selectedSizeState[code];
-        if (!item || !color || !size) return;
-
-        const variants = getNormalizedVariants(item);
-        const maxQty = variants[color]?.[size] || 0;
-        if (maxQty <= 0) return;
-
-        const cartKey = `${item.code}_${color}_${size}`;
-        const inCart = cart.find(c => c.cartKey === cartKey);
-
-        if (inCart) {
-            if (inCart.qty < maxQty) {
-                inCart.qty++;
-                showToast(`Добавлено: ${item.name} (${inCart.qty} шт)`);
-            } else {
-                alert(`Достигнут максимум в наличии: ${maxQty} шт!`);
-                return;
-            }
-        } else {
-            cart.push({
-                cartKey,
-                code: item.code,
-                name: item.name,
-                color: color,
-                size: size,
-                buyPrice: item.buyPrice,
-                sellPrice: item.sellPrice,
-                qty: 1
-            });
-            showToast(`В корзине: ${item.name} [${size}]`);
-        }
-        updateCartBadge();
+    if (newQty > maxQty) {
+      alert(`Больше нет в наличии! Доступно всего: ${maxQty} шт.`);
+      return;
     }
 
-    function updateCartBadge() {
-        const count = cart.reduce((s, i) => s + i.qty, 0);
-        document.getElementById('cart_badge').innerText = count;
-    }
+    c.qty = newQty;
+    updateCartBadge();
+    openCartModal();
+  }
 
-    function changeCartItemQty(idx, delta) {
-        const c = cart[idx];
-        if (!c) return;
+  function openCartModal() {
+    const list = document.getElementById('cart_items_list');
+    list.innerHTML = '';
+    let total = 0;
 
-        const st = db.stock.find(i => i.code.toLowerCase() === c.code.toLowerCase());
-        const vars = st ? getNormalizedVariants(st) : {};
-        const maxQty = vars[c.color]?.[c.size] || 999;
-
-        const newQty = c.qty + delta;
-        if (newQty <= 0) {
-            removeFromCart(idx);
-            return;
-        }
-
-        if (newQty > maxQty) {
-            alert(`Больше нет в наличии! Доступно всего: ${maxQty} шт.`);
-            return;
-        }
-
-        c.qty = newQty;
-        updateCartBadge();
-        openCartModal();
-    }
-
-    function openCartModal() {
-        const list = document.getElementById('cart_items_list');
-        list.innerHTML = '';
-        let total = 0;
-
-        if (cart.length === 0) {
-            list.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:20px; font-size:13px;">Корзина пуста</div>';
-        } else {
-            cart.forEach((c, idx) => {
-                const sub = c.sellPrice * c.qty;
-                total += sub;
-                const colorPart = c.color && c.color !== 'Основной' ? ` (${c.color})` : '';
-                list.innerHTML += `
+    if (cart.length === 0) {
+      list.innerHTML = '<div style="color:var(--text-muted); text-align:center; padding:20px; font-size:13px;">Корзина пуста</div>';
+    } else {
+      cart.forEach((c, idx) => {
+        const sub = c.sellPrice * c.qty;
+        total += sub;
+        const colorPart = c.color && c.color !== 'Основной' ? ` (${c.color})` : '';
+        list.innerHTML += `
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border-color);">
                         <div>
                             <b>${c.name}${colorPart}</b> <span style="color:var(--accent-primary);">[${c.size}]</span><br>
@@ -1089,89 +1089,89 @@
                         </div>
                     </div>
                 `;
-            });
+      });
+    }
+
+    document.getElementById('cart_total_price').innerText = `${total.toLocaleString()} ₸`;
+    document.getElementById('cart_modal').classList.add('active');
+  }
+
+  function removeFromCart(idx) {
+    cart.splice(idx, 1);
+    updateCartBadge();
+    openCartModal();
+  }
+
+  function openCheckoutModal() {
+    if (cart.length === 0) { alert("Корзина пуста!"); return; }
+    closeModal('cart_modal');
+    const total = cart.reduce((s, i) => s + (i.sellPrice * i.qty), 0);
+    document.getElementById('checkout_amount').innerText = `${total.toLocaleString()} ₸`;
+    toggleTransferInfo();
+    document.getElementById('checkout_modal').classList.add('active');
+  }
+
+  function completeClientOrder() {
+    const name = document.getElementById('cust_name').value.trim();
+    const phone = document.getElementById('cust_phone').value.trim();
+    const bank = document.getElementById('checkout_bank').value;
+
+    if (!name) { alert("Пожалуйста, введите Имя и Фамилию!"); return; }
+    if (!phone) { alert("Пожалуйста, введите номер телефона!"); return; }
+
+    const checkNum = "CHK-" + Math.floor(1000 + Math.random() * 9000);
+    const orderDate = new Date().toLocaleDateString('ru-RU') + ' ' + new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+    let totalSum = 0;
+    let itemsSummaryText = "";
+
+    cart.forEach(c => {
+      const st = db.stock.find(i => i.code.toLowerCase() === c.code.toLowerCase());
+      if (st) {
+        if (st.variants && st.variants[c.color] && st.variants[c.color][c.size] !== undefined) {
+          st.variants[c.color][c.size] -= c.qty;
+        } else if (st.sizes && st.sizes[c.size] !== undefined) {
+          st.sizes[c.size] -= c.qty;
         }
+      }
 
-        document.getElementById('cart_total_price').innerText = `${total.toLocaleString()} ₸`;
-        document.getElementById('cart_modal').classList.add('active');
+      const totalSell = c.sellPrice * c.qty;
+      const totalBuy = (c.buyPrice || 0) * c.qty;
+      const netProfit = totalSell - totalBuy;
+      totalSum += totalSell;
+
+      const colorPart = c.color && c.color !== 'Основной' ? ` (${c.color})` : '';
+      itemsSummaryText += `• ${c.name}${colorPart} [${c.size}] x ${c.qty} шт = ${totalSell.toLocaleString()} ₸\n`;
+
+      db.sales.unshift({
+        checkNum: checkNum,
+        customer: `${name} (${phone})`,
+        code: c.code,
+        name: `${c.name}${colorPart} (${c.size})`,
+        rawName: c.name,
+        size: c.size,
+        color: c.color,
+        qty: c.qty,
+        buyPrice: c.buyPrice || 0,
+        totalPrice: totalSell,
+        totalBuyPrice: totalBuy,
+        netProfit: netProfit,
+        paymentMethod: bank,
+        date: orderDate,
+        isReturned: false
+      });
+    });
+
+    if (bank === 'В долг') {
+      db.debts.unshift({
+        checkNum: checkNum,
+        name: name,
+        phone: phone,
+        amount: totalSum,
+        note: `Чек ${checkNum}: ${cart.map(c => `${c.name} (${c.color}) [${c.size}]`).join(', ')}`
+      });
     }
 
-    function removeFromCart(idx) {
-        cart.splice(idx, 1);
-        updateCartBadge();
-        openCartModal();
-    }
-
-    function openCheckoutModal() {
-        if (cart.length === 0) { alert("Корзина пуста!"); return; }
-        closeModal('cart_modal');
-        const total = cart.reduce((s, i) => s + (i.sellPrice * i.qty), 0);
-        document.getElementById('checkout_amount').innerText = `${total.toLocaleString()} ₸`;
-        toggleTransferInfo();
-        document.getElementById('checkout_modal').classList.add('active');
-    }
-
-    function completeClientOrder() {
-        const name = document.getElementById('cust_name').value.trim();
-        const phone = document.getElementById('cust_phone').value.trim();
-        const bank = document.getElementById('checkout_bank').value;
-
-        if (!name) { alert("Пожалуйста, введите Имя и Фамилию!"); return; }
-        if (!phone) { alert("Пожалуйста, введите номер телефона!"); return; }
-
-        const checkNum = "CHK-" + Math.floor(1000 + Math.random() * 9000);
-        const orderDate = new Date().toLocaleDateString('ru-RU') + ' ' + new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
-        let totalSum = 0;
-        let itemsSummaryText = "";
-
-        cart.forEach(c => {
-            const st = db.stock.find(i => i.code.toLowerCase() === c.code.toLowerCase());
-            if (st) {
-                if (st.variants && st.variants[c.color] && st.variants[c.color][c.size] !== undefined) {
-                    st.variants[c.color][c.size] -= c.qty;
-                } else if (st.sizes && st.sizes[c.size] !== undefined) {
-                    st.sizes[c.size] -= c.qty;
-                }
-            }
-
-            const totalSell = c.sellPrice * c.qty;
-            const totalBuy = (c.buyPrice || 0) * c.qty;
-            const netProfit = totalSell - totalBuy;
-            totalSum += totalSell;
-
-            const colorPart = c.color && c.color !== 'Основной' ? ` (${c.color})` : '';
-            itemsSummaryText += `• ${c.name}${colorPart} [${c.size}] x ${c.qty} шт = ${totalSell.toLocaleString()} ₸\n`;
-
-            db.sales.unshift({
-                checkNum: checkNum,
-                customer: `${name} (${phone})`,
-                code: c.code,
-                name: `${c.name}${colorPart} (${c.size})`,
-                rawName: c.name,
-                size: c.size,
-                color: c.color,
-                qty: c.qty,
-                buyPrice: c.buyPrice || 0,
-                totalPrice: totalSell,
-                totalBuyPrice: totalBuy,
-                netProfit: netProfit,
-                paymentMethod: bank,
-                date: orderDate,
-                isReturned: false
-            });
-        });
-
-        if (bank === 'В долг') {
-            db.debts.unshift({
-                checkNum: checkNum,
-                name: name,
-                phone: phone,
-                amount: totalSum,
-                note: `Чек ${checkNum}: ${cart.map(c => `${c.name} (${c.color}) [${c.size}]`).join(', ')}`
-            });
-        }
-
-        const receiptHtml = `
+    const receiptHtml = `
             <div style="text-align:center; border-bottom:1px dashed #000; padding-bottom:6px; margin-bottom:6px;">
                 <b style="font-size:15px; letter-spacing:1px;">DILBAR.LUXE</b><br>
                 <span>Чек №: ${checkNum}</span><br>
@@ -1189,9 +1189,9 @@
             </div>
         `;
 
-        document.getElementById('receipt_content').innerHTML = receiptHtml;
+    document.getElementById('receipt_content').innerHTML = receiptHtml;
 
-        const waText = encodeURIComponent(
+    const waText = encodeURIComponent(
             `✨ *DILBAR.LUXE — ЧЕК ${checkNum}*\n` +
             `📅 Дата: ${orderDate}\n` +
             `👤 Клиент: ${name} (${phone})\n` +
@@ -1199,77 +1199,77 @@
             `*Товары:*\n${itemsSummaryText}\n` +
             `💰 *ИТОГО: ${totalSum.toLocaleString()} ₸*\n\n` +
             `Благодарим за выбор dilbar.luxe!`
-        );
+    );
 
-        document.getElementById('whatsapp_btn').href = `https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${waText}`;
+    document.getElementById('whatsapp_btn').href = `https://api.whatsapp.com/send?phone=${WHATSAPP_PHONE}&text=${waText}`;
 
-        cart = [];
-        updateCartBadge();
-        closeModal('checkout_modal');
-        save();
+    cart = [];
+    updateCartBadge();
+    closeModal('checkout_modal');
+    save();
 
-        document.getElementById('receipt_modal').classList.add('active');
-    }
+    document.getElementById('receipt_modal').classList.add('active');
+  }
 
-    function processSaleReturn(saleIndex) {
-        const s = db.sales[saleIndex];
-        if (!s || s.isReturned) return;
+  function processSaleReturn(saleIndex) {
+    const s = db.sales[saleIndex];
+    if (!s || s.isReturned) return;
 
-        const confirmReturn = confirm(
+    const confirmReturn = confirm(
             `Оформить ВОЗВРАТ товара?\n\n` +
             `Чек: ${s.checkNum}\n` +
             `Товар: ${s.name}\n` +
             `Сумма возврата: ${s.totalPrice.toLocaleString()} ₸\n\n` +
             `Товар вернется на склад, а сумма спишется из выручки и прибыли.`
-        );
+    );
 
-        if (!confirmReturn) return;
+    if (!confirmReturn) return;
 
-        const st = db.stock.find(i => i.code.toLowerCase() === (s.code || '').toLowerCase());
-        if (st) {
-            const color = s.color || "Основной";
-            const size = s.size;
-            if (st.variants && st.variants[color] && st.variants[color][size] !== undefined) {
-                st.variants[color][size] += s.qty;
-            } else if (st.sizes && st.sizes[size] !== undefined) {
-                st.sizes[size] += s.qty;
-            }
-        }
-
-        s.isReturned = true;
-        s.paymentMethod = `[ВОЗВРАТ] ${s.paymentMethod}`;
-        s.totalPrice = 0;
-        s.netProfit = 0;
-        s.totalBuyPrice = 0;
-
-        save();
-        alert("✅ Возврат успешно оформлен! Товар вернулся на склад, статистика скорректирована.");
+    const st = db.stock.find(i => i.code.toLowerCase() === (s.code || '').toLowerCase());
+    if (st) {
+      const color = s.color || "Основной";
+      const size = s.size;
+      if (st.variants && st.variants[color] && st.variants[color][size] !== undefined) {
+        st.variants[color][size] += s.qty;
+      } else if (st.sizes && st.sizes[size] !== undefined) {
+        st.sizes[size] += s.qty;
+      }
     }
 
-    // РЕЖИМ ОБМЕНА И ДОБАВЛЕНИЯ ТОВАРОВ В ДОЛГ
-    function openDebtExchangeModal(debtIdx) {
-        currentExchDebtIdx = debtIdx;
-        const d = db.debts[debtIdx];
-        if (!d) return;
+    s.isReturned = true;
+    s.paymentMethod = `[ВОЗВРАТ] ${s.paymentMethod}`;
+    s.totalPrice = 0;
+    s.netProfit = 0;
+    s.totalBuyPrice = 0;
 
-        document.getElementById('exchange_client_name').innerText = `${d.name} (${d.phone || '—'})`;
+    save();
+    alert("✅ Возврат успешно оформлен! Товар вернулся на склад, статистика скорректирована.");
+  }
 
-        // Находим продажи, привязанные к этому долгу
-        tempExchSales = db.sales.filter(s => s.checkNum === d.checkNum && !s.isReturned);
+  // РЕЖИМ ОБМЕНА И ДОБАВЛЕНИЯ ТОВАРОВ В ДОЛГ
+  function openDebtExchangeModal(debtIdx) {
+    currentExchDebtIdx = debtIdx;
+    const d = db.debts[debtIdx];
+    if (!d) return;
 
-        renderExchangeModalView();
-        populateExchangeProductSelect();
-        document.getElementById('debt_exchange_modal').classList.add('active');
-    }
+    document.getElementById('exchange_client_name').innerText = `${d.name} (${d.phone || '—'})`;
 
-    function renderExchangeModalView() {
-        const d = db.debts[currentExchDebtIdx];
-        const list = document.getElementById('exchange_items_list');
-        list.innerHTML = '';
+    // Находим продажи, привязанные к этому долгу
+    tempExchSales = db.sales.filter(s => s.checkNum === d.checkNum && !s.isReturned);
 
-        if (tempExchSales.length > 0) {
-            tempExchSales.forEach((s, idx) => {
-                list.innerHTML += `
+    renderExchangeModalView();
+    populateExchangeProductSelect();
+    document.getElementById('debt_exchange_modal').classList.add('active');
+  }
+
+  function renderExchangeModalView() {
+    const d = db.debts[currentExchDebtIdx];
+    const list = document.getElementById('exchange_items_list');
+    list.innerHTML = '';
+
+    if (tempExchSales.length > 0) {
+      tempExchSales.forEach((s, idx) => {
+        list.innerHTML += `
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px dashed var(--border-color);">
                         <div>
                             <b>${s.name}</b><br>
@@ -1281,421 +1281,421 @@
                         </div>
                     </div>
                 `;
-            });
-        } else {
-            list.innerHTML = `
+      });
+    } else {
+      list.innerHTML = `
                 <div style="padding:6px 0; color:var(--text-muted);">
                     ${d.note || 'Ручная запись долга'}<br>
                     <small>Для возврата скорректируйте сумму вручную через ✏️</small>
                 </div>
             `;
+    }
+
+    const total = tempExchSales.length > 0 ? tempExchSales.reduce((sum, s) => sum + s.totalPrice, 0) : d.amount;
+    document.getElementById('exchange_new_total').innerText = `${total.toLocaleString()} ₸`;
+  }
+
+  function populateExchangeProductSelect() {
+    const sel = document.getElementById('exch_prod_select');
+    sel.innerHTML = db.stock.map(p => `<option value="${p.code}">${p.code} - ${p.name} (${p.sellPrice} ₸)</option>`).join('');
+    updateExchVariantOptions();
+  }
+
+  function updateExchVariantOptions() {
+    const code = document.getElementById('exch_prod_select').value;
+    const prod = db.stock.find(p => p.code === code);
+    const vSel = document.getElementById('exch_variant_select');
+    vSel.innerHTML = '';
+
+    if (!prod) return;
+    const vars = getNormalizedVariants(prod);
+
+    Object.entries(vars).forEach(([color, sizes]) => {
+      Object.entries(sizes).forEach(([size, qty]) => {
+        if (qty > 0) {
+          vSel.innerHTML += `<option value="${color}|${size}">${color} [${size}] (в наличии ${qty})</option>`;
         }
+      });
+    });
 
-        const total = tempExchSales.length > 0 ? tempExchSales.reduce((sum, s) => sum + s.totalPrice, 0) : d.amount;
-        document.getElementById('exchange_new_total').innerText = `${total.toLocaleString()} ₸`;
+    if (vSel.innerHTML === '') {
+      vSel.innerHTML = `<option value="">Нет в наличии</option>`;
+    }
+  }
+
+  function returnItemFromDebtModal(idx) {
+    const s = tempExchSales[idx];
+    if (!s) return;
+
+    // Возвращаем на склад
+    const st = db.stock.find(i => i.code.toLowerCase() === (s.code || '').toLowerCase());
+    if (st) {
+      const color = s.color || "Основной";
+      const size = s.size;
+      if (st.variants && st.variants[color] && st.variants[color][size] !== undefined) {
+        st.variants[color][size] += s.qty;
+      } else if (st.sizes && st.sizes[size] !== undefined) {
+        st.sizes[size] += s.qty;
+      }
     }
 
-    function populateExchangeProductSelect() {
-        const sel = document.getElementById('exch_prod_select');
-        sel.innerHTML = db.stock.map(p => `<option value="${p.code}">${p.code} - ${p.name} (${p.sellPrice} ₸)</option>`).join('');
-        updateExchVariantOptions();
+    s.isReturned = true;
+    s.paymentMethod = `[ВОЗВРАТ] ${s.paymentMethod}`;
+    s.totalPrice = 0;
+    s.netProfit = 0;
+
+    tempExchSales.splice(idx, 1);
+    renderExchangeModalView();
+    showToast("Товар возвращен на склад!");
+  }
+
+  function addExchProductToDebt() {
+    const code = document.getElementById('exch_prod_select').value;
+    const vVal = document.getElementById('exch_variant_select').value;
+    if (!vVal) { alert("Выберите доступный размер!"); return; }
+
+    const [color, size] = vVal.split('|');
+    const st = db.stock.find(p => p.code === code);
+    if (!st) return;
+
+    const vars = getNormalizedVariants(st);
+    if ((vars[color]?.[size] || 0) <= 0) {
+      alert("Товара нет в наличии!");
+      return;
     }
 
-    function updateExchVariantOptions() {
-        const code = document.getElementById('exch_prod_select').value;
-        const prod = db.stock.find(p => p.code === code);
-        const vSel = document.getElementById('exch_variant_select');
-        vSel.innerHTML = '';
+    // Списываем 1 шт со склада
+    if (st.variants && st.variants[color] && st.variants[color][size] !== undefined) {
+      st.variants[color][size] -= 1;
+    } else if (st.sizes && st.sizes[size] !== undefined) {
+      st.sizes[size] -= 1;
+    }
 
-        if (!prod) return;
-        const vars = getNormalizedVariants(prod);
+    const d = db.debts[currentExchDebtIdx];
+    const newSale = {
+      checkNum: d.checkNum || ("CHK-" + Math.floor(1000 + Math.random() * 9000)),
+      customer: `${d.name} (${d.phone})`,
+      code: st.code,
+      name: `${st.name} (${color}) (${size})`,
+      rawName: st.name,
+      size: size,
+      color: color,
+      qty: 1,
+      buyPrice: st.buyPrice || 0,
+      totalPrice: st.sellPrice,
+      totalBuyPrice: st.buyPrice || 0,
+      netProfit: (st.sellPrice - (st.buyPrice || 0)),
+      paymentMethod: 'В долг',
+      date: new Date().toLocaleDateString('ru-RU'),
+      isReturned: false
+    };
 
-        Object.entries(vars).forEach(([color, sizes]) => {
-            Object.entries(sizes).forEach(([size, qty]) => {
-                if (qty > 0) {
-                    vSel.innerHTML += `<option value="${color}|${size}">${color} [${size}] (в наличии ${qty})</option>`;
-                }
-            });
-        });
+    db.sales.unshift(newSale);
+    tempExchSales.push(newSale);
 
-        if (vSel.innerHTML === '') {
-            vSel.innerHTML = `<option value="">Нет в наличии</option>`;
+    renderExchangeModalView();
+    populateExchangeProductSelect();
+    showToast("Новый товар добавлен к долгу!");
+  }
+
+  function saveDebtExchange() {
+    const d = db.debts[currentExchDebtIdx];
+    if (!d) return;
+
+    if (tempExchSales.length > 0) {
+      const newTotal = tempExchSales.reduce((sum, s) => sum + s.totalPrice, 0);
+      d.amount = newTotal;
+      d.note = `Чек ${d.checkNum}: ${tempExchSales.map(s => `${s.rawName || s.name} [${s.size}]`).join(', ')}`;
+    }
+
+    save();
+    closeModal('debt_exchange_modal');
+    alert("✅ Изменения по долгу и обмену успешно сохранены!");
+  }
+
+  function copyPhone() {
+    navigator.clipboard.writeText(PAYMENT_PHONE).then(() => alert("📋 Номер для перевода скопирован: " + PAYMENT_PHONE));
+  }
+
+  function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+  function promptAdminLogin() {
+    const pin = prompt("Введите PIN владельца dilbar.luxe:");
+    if (pin === ADMIN_PIN) {
+      document.getElementById('admin_view').classList.add('active');
+      document.getElementById('client_view').style.display = 'none';
+      generateAdminColorGrids();
+      renderAdmin();
+    } else if (pin !== null) {
+      alert("❌ Неверный PIN!");
+    }
+  }
+
+  function exitAdmin() {
+    cancelStockEdit();
+    cancelDebtEdit();
+    document.getElementById('admin_view').classList.remove('active');
+    document.getElementById('client_view').style.display = 'block';
+  }
+
+  function switchAdminTab(tabId, btn) {
+    document.querySelectorAll('.admin-subtab').forEach(t => t.style.display = 'none');
+    document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).style.display = 'block';
+    btn.classList.add('active');
+  }
+
+  function startEditStock(originalIndex) {
+    const item = db.stock[originalIndex];
+    if (!item) return;
+
+    document.getElementById('edit_original_code').value = item.code;
+    document.getElementById('adm_code').value = item.code;
+    document.getElementById('adm_name').value = item.name;
+    document.getElementById('adm_buy').value = item.buyPrice;
+    document.getElementById('adm_sell').value = item.sellPrice;
+
+    const variants = getNormalizedVariants(item);
+    const colors = Object.keys(variants);
+    document.getElementById('adm_colors_input').value = colors.filter(c => c !== 'Основной').join(', ');
+
+    const allSizes = Object.values(variants).flatMap(s => Object.keys(s));
+    const isKids = allSizes.some(k => ['1','2','3','4','5','6','7','8'].includes(k));
+    document.getElementById('size_category_select').value = isKids ? 'kids' : 'adult';
+
+    generateAdminColorGrids(variants);
+
+    document.getElementById('btn_save_stock').innerText = "💾 Обновить товар";
+    document.getElementById('btn_save_stock').style.background = "#10b981";
+    document.getElementById('btn_cancel_edit').style.display = "block";
+
+    document.getElementById('stock_form').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function cancelStockEdit() {
+    document.getElementById('edit_original_code').value = '';
+    document.getElementById('stock_form').reset();
+    document.getElementById('btn_save_stock').innerText = "+ Сохранить";
+    document.getElementById('btn_save_stock').style.background = "var(--accent-primary)";
+    document.getElementById('btn_cancel_edit').style.display = "none";
+    generateAdminColorGrids();
+  }
+
+  function addStockItem(e) {
+    e.preventDefault();
+    const originalCode = document.getElementById('edit_original_code').value.trim();
+    const code = document.getElementById('adm_code').value.trim();
+    const name = document.getElementById('adm_name').value.trim();
+    const buyPrice = Number(document.getElementById('adm_buy').value);
+    const sellPrice = Number(document.getElementById('adm_sell').value);
+
+    const variants = {};
+    const inputs = document.querySelectorAll('#admin_color_grids_container input[data-color]');
+    inputs.forEach(inp => {
+      const color = inp.getAttribute('data-color');
+      const size = inp.getAttribute('data-size');
+      const qty = Number(inp.value) || 0;
+      if (!variants[color]) variants[color] = {};
+      variants[color][size] = qty;
+    });
+
+    const file = document.getElementById('adm_img').files[0];
+
+    const saveToDb = (newImgData) => {
+      if (originalCode) {
+        const target = db.stock.find(i => i.code.toLowerCase() === originalCode.toLowerCase());
+        if (target) {
+          target.code = code;
+          target.name = name;
+          target.buyPrice = buyPrice;
+          target.sellPrice = sellPrice;
+          target.variants = variants;
+          if (newImgData) target.img = newImgData;
         }
-    }
-
-    function returnItemFromDebtModal(idx) {
-        const s = tempExchSales[idx];
-        if (!s) return;
-
-        // Возвращаем на склад
-        const st = db.stock.find(i => i.code.toLowerCase() === (s.code || '').toLowerCase());
-        if (st) {
-            const color = s.color || "Основной";
-            const size = s.size;
-            if (st.variants && st.variants[color] && st.variants[color][size] !== undefined) {
-                st.variants[color][size] += s.qty;
-            } else if (st.sizes && st.sizes[size] !== undefined) {
-                st.sizes[size] += s.qty;
-            }
-        }
-
-        s.isReturned = true;
-        s.paymentMethod = `[ВОЗВРАТ] ${s.paymentMethod}`;
-        s.totalPrice = 0;
-        s.netProfit = 0;
-
-        tempExchSales.splice(idx, 1);
-        renderExchangeModalView();
-        showToast("Товар возвращен на склад!");
-    }
-
-    function addExchProductToDebt() {
-        const code = document.getElementById('exch_prod_select').value;
-        const vVal = document.getElementById('exch_variant_select').value;
-        if (!vVal) { alert("Выберите доступный размер!"); return; }
-
-        const [color, size] = vVal.split('|');
-        const st = db.stock.find(p => p.code === code);
-        if (!st) return;
-
-        const vars = getNormalizedVariants(st);
-        if ((vars[color]?.[size] || 0) <= 0) {
-            alert("Товара нет в наличии!");
-            return;
-        }
-
-        // Списываем 1 шт со склада
-        if (st.variants && st.variants[color] && st.variants[color][size] !== undefined) {
-            st.variants[color][size] -= 1;
-        } else if (st.sizes && st.sizes[size] !== undefined) {
-            st.sizes[size] -= 1;
-        }
-
-        const d = db.debts[currentExchDebtIdx];
-        const newSale = {
-            checkNum: d.checkNum || ("CHK-" + Math.floor(1000 + Math.random() * 9000)),
-            customer: `${d.name} (${d.phone})`,
-            code: st.code,
-            name: `${st.name} (${color}) (${size})`,
-            rawName: st.name,
-            size: size,
-            color: color,
-            qty: 1,
-            buyPrice: st.buyPrice || 0,
-            totalPrice: st.sellPrice,
-            totalBuyPrice: st.buyPrice || 0,
-            netProfit: (st.sellPrice - (st.buyPrice || 0)),
-            paymentMethod: 'В долг',
-            date: new Date().toLocaleDateString('ru-RU'),
-            isReturned: false
-        };
-
-        db.sales.unshift(newSale);
-        tempExchSales.push(newSale);
-
-        renderExchangeModalView();
-        populateExchangeProductSelect();
-        showToast("Новый товар добавлен к долгу!");
-    }
-
-    function saveDebtExchange() {
-        const d = db.debts[currentExchDebtIdx];
-        if (!d) return;
-
-        if (tempExchSales.length > 0) {
-            const newTotal = tempExchSales.reduce((sum, s) => sum + s.totalPrice, 0);
-            d.amount = newTotal;
-            d.note = `Чек ${d.checkNum}: ${tempExchSales.map(s => `${s.rawName || s.name} [${s.size}]`).join(', ')}`;
-        }
-
-        save();
-        closeModal('debt_exchange_modal');
-        alert("✅ Изменения по долгу и обмену успешно сохранены!");
-    }
-
-    function copyPhone() {
-        navigator.clipboard.writeText(PAYMENT_PHONE).then(() => alert("📋 Номер для перевода скопирован: " + PAYMENT_PHONE));
-    }
-
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-    function promptAdminLogin() {
-        const pin = prompt("Введите PIN владельца dilbar.luxe:");
-        if (pin === ADMIN_PIN) {
-            document.getElementById('admin_view').classList.add('active');
-            document.getElementById('client_view').style.display = 'none';
-            generateAdminColorGrids();
-            renderAdmin();
-        } else if (pin !== null) {
-            alert("❌ Неверный PIN!");
-        }
-    }
-
-    function exitAdmin() {
-        cancelStockEdit();
-        cancelDebtEdit();
-        document.getElementById('admin_view').classList.remove('active');
-        document.getElementById('client_view').style.display = 'block';
-    }
-
-    function switchAdminTab(tabId, btn) {
-        document.querySelectorAll('.admin-subtab').forEach(t => t.style.display = 'none');
-        document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(tabId).style.display = 'block';
-        btn.classList.add('active');
-    }
-
-    function startEditStock(originalIndex) {
-        const item = db.stock[originalIndex];
-        if (!item) return;
-
-        document.getElementById('edit_original_code').value = item.code;
-        document.getElementById('adm_code').value = item.code;
-        document.getElementById('adm_name').value = item.name;
-        document.getElementById('adm_buy').value = item.buyPrice;
-        document.getElementById('adm_sell').value = item.sellPrice;
-
-        const variants = getNormalizedVariants(item);
-        const colors = Object.keys(variants);
-        document.getElementById('adm_colors_input').value = colors.filter(c => c !== 'Основной').join(', ');
-
-        const allSizes = Object.values(variants).flatMap(s => Object.keys(s));
-        const isKids = allSizes.some(k => ['1','2','3','4','5','6','7','8'].includes(k));
-        document.getElementById('size_category_select').value = isKids ? 'kids' : 'adult';
-
-        generateAdminColorGrids(variants);
-
-        document.getElementById('btn_save_stock').innerText = "💾 Обновить товар";
-        document.getElementById('btn_save_stock').style.background = "#10b981";
-        document.getElementById('btn_cancel_edit').style.display = "block";
-
-        document.getElementById('stock_form').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function cancelStockEdit() {
-        document.getElementById('edit_original_code').value = '';
-        document.getElementById('stock_form').reset();
-        document.getElementById('btn_save_stock').innerText = "+ Сохранить";
-        document.getElementById('btn_save_stock').style.background = "var(--accent-primary)";
-        document.getElementById('btn_cancel_edit').style.display = "none";
-        generateAdminColorGrids();
-    }
-
-    function addStockItem(e) {
-        e.preventDefault();
-        const originalCode = document.getElementById('edit_original_code').value.trim();
-        const code = document.getElementById('adm_code').value.trim();
-        const name = document.getElementById('adm_name').value.trim();
-        const buyPrice = Number(document.getElementById('adm_buy').value);
-        const sellPrice = Number(document.getElementById('adm_sell').value);
-
-        const variants = {};
-        const inputs = document.querySelectorAll('#admin_color_grids_container input[data-color]');
-        inputs.forEach(inp => {
-            const color = inp.getAttribute('data-color');
-            const size = inp.getAttribute('data-size');
-            const qty = Number(inp.value) || 0;
-            if (!variants[color]) variants[color] = {};
-            variants[color][size] = qty;
-        });
-
-        const file = document.getElementById('adm_img').files[0];
-
-        const saveToDb = (newImgData) => {
-            if (originalCode) {
-                const target = db.stock.find(i => i.code.toLowerCase() === originalCode.toLowerCase());
-                if (target) {
-                    target.code = code;
-                    target.name = name;
-                    target.buyPrice = buyPrice;
-                    target.sellPrice = sellPrice;
-                    target.variants = variants;
-                    if (newImgData) target.img = newImgData;
-                }
-            } else {
-                let exist = db.stock.find(i => i.code.toLowerCase() === code.toLowerCase());
-                if (exist) {
-                    exist.name = name;
-                    exist.buyPrice = buyPrice;
-                    exist.sellPrice = sellPrice;
-                    exist.variants = variants;
-                    if (newImgData) exist.img = newImgData;
-                } else {
-                    db.stock.unshift({ code, name, variants, buyPrice, sellPrice, img: newImgData || '' });
-                }
-            }
-
-            cancelStockEdit();
-            save();
-            alert("✅ Товар успешно сохранен на складе!");
-        };
-
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const maxW = 900;
-                    const maxH = 900;
-                    let w = img.width;
-                    let h = img.height;
-
-                    if (w > h && w > maxW) {
-                        h = Math.round(h * (maxW / w));
-                        w = maxW;
-                    } else if (h > maxH) {
-                        w = Math.round(w * (maxH / h));
-                        h = maxH;
-                    }
-
-                    canvas.width = w;
-                    canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
-                    saveToDb(compressedDataUrl);
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
+      } else {
+        let exist = db.stock.find(i => i.code.toLowerCase() === code.toLowerCase());
+        if (exist) {
+          exist.name = name;
+          exist.buyPrice = buyPrice;
+          exist.sellPrice = sellPrice;
+          exist.variants = variants;
+          if (newImgData) exist.img = newImgData;
         } else {
-            saveToDb(null);
+          db.stock.unshift({ code, name, variants, buyPrice, sellPrice, img: newImgData || '' });
         }
+      }
+
+      cancelStockEdit();
+      save();
+      alert("✅ Товар успешно сохранен на складе!");
+    };
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const maxW = 900;
+          const maxH = 900;
+          let w = img.width;
+          let h = img.height;
+
+          if (w > h && w > maxW) {
+            h = Math.round(h * (maxW / w));
+            w = maxW;
+          } else if (h > maxH) {
+            w = Math.round(w * (maxH / h));
+            h = maxH;
+          }
+
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+          saveToDb(compressedDataUrl);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      saveToDb(null);
+    }
+  }
+
+  function startEditDebt(idx) {
+    const d = db.debts[idx];
+    if (!d) return;
+
+    document.getElementById('edit_debt_index').value = idx;
+    document.getElementById('adm_deb_name').value = d.name || '';
+    document.getElementById('adm_deb_phone').value = d.phone || '';
+    document.getElementById('adm_deb_amount').value = d.amount || '';
+    document.getElementById('adm_deb_note').value = d.note || '';
+
+    document.getElementById('debt_form_title').innerText = `✏️ Редактирование долга: ${d.name}`;
+    document.getElementById('btn_save_debt').innerText = "💾 Обновить";
+    document.getElementById('btn_save_debt').style.background = "#10b981";
+    document.getElementById('btn_save_debt').style.color = "#fff";
+    document.getElementById('btn_cancel_debt_edit').style.display = "inline-block";
+
+    document.getElementById('debt_form').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function cancelDebtEdit() {
+    document.getElementById('edit_debt_index').value = "-1";
+    document.getElementById('debt_form').reset();
+    document.getElementById('debt_form_title').innerText = "+ Добавить запись в долги:";
+    document.getElementById('btn_save_debt').innerText = "+ Записать";
+    document.getElementById('btn_save_debt').style.background = "#f59e0b";
+    document.getElementById('btn_save_debt').style.color = "#000";
+    document.getElementById('btn_cancel_debt_edit').style.display = "none";
+  }
+
+  function handleDebtFormSubmit(e) {
+    e.preventDefault();
+    const editIdx = parseInt(document.getElementById('edit_debt_index').value);
+    const name = document.getElementById('adm_deb_name').value.trim();
+    const phone = document.getElementById('adm_deb_phone').value.trim();
+    const amount = Number(document.getElementById('adm_deb_amount').value);
+    const note = document.getElementById('adm_deb_note').value.trim();
+
+    if (editIdx >= 0 && db.debts[editIdx]) {
+      db.debts[editIdx].name = name;
+      db.debts[editIdx].phone = phone;
+      db.debts[editIdx].amount = amount;
+      db.debts[editIdx].note = note;
+      showToast("Запись должника обновлена!");
+    } else {
+      db.debts.unshift({ name, phone, amount, note });
+      showToast("Запись о долге сохранена!");
     }
 
-    function startEditDebt(idx) {
-        const d = db.debts[idx];
-        if (!d) return;
+    cancelDebtEdit();
+    save();
+  }
 
-        document.getElementById('edit_debt_index').value = idx;
-        document.getElementById('adm_deb_name').value = d.name || '';
-        document.getElementById('adm_deb_phone').value = d.phone || '';
-        document.getElementById('adm_deb_amount').value = d.amount || '';
-        document.getElementById('adm_deb_note').value = d.note || '';
+  function settleDebt(originalIdx) {
+    const debt = db.debts[originalIdx];
+    if (!debt) return;
 
-        document.getElementById('debt_form_title').innerText = `✏️ Редактирование долга: ${d.name}`;
-        document.getElementById('btn_save_debt').innerText = "💾 Обновить";
-        document.getElementById('btn_save_debt').style.background = "#10b981";
-        document.getElementById('btn_save_debt').style.color = "#fff";
-        document.getElementById('btn_cancel_debt_edit').style.display = "inline-block";
-
-        document.getElementById('debt_form').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function cancelDebtEdit() {
-        document.getElementById('edit_debt_index').value = "-1";
-        document.getElementById('debt_form').reset();
-        document.getElementById('debt_form_title').innerText = "+ Добавить запись в долги:";
-        document.getElementById('btn_save_debt').innerText = "+ Записать";
-        document.getElementById('btn_save_debt').style.background = "#f59e0b";
-        document.getElementById('btn_save_debt').style.color = "#000";
-        document.getElementById('btn_cancel_debt_edit').style.display = "none";
-    }
-
-    function handleDebtFormSubmit(e) {
-        e.preventDefault();
-        const editIdx = parseInt(document.getElementById('edit_debt_index').value);
-        const name = document.getElementById('adm_deb_name').value.trim();
-        const phone = document.getElementById('adm_deb_phone').value.trim();
-        const amount = Number(document.getElementById('adm_deb_amount').value);
-        const note = document.getElementById('adm_deb_note').value.trim();
-
-        if (editIdx >= 0 && db.debts[editIdx]) {
-            db.debts[editIdx].name = name;
-            db.debts[editIdx].phone = phone;
-            db.debts[editIdx].amount = amount;
-            db.debts[editIdx].note = note;
-            showToast("Запись должника обновлена!");
-        } else {
-            db.debts.unshift({ name, phone, amount, note });
-            showToast("Запись о долге сохранена!");
-        }
-
-        cancelDebtEdit();
-        save();
-    }
-
-    function settleDebt(originalIdx) {
-        const debt = db.debts[originalIdx];
-        if (!debt) return;
-
-        const payType = prompt(
+    const payType = prompt(
             `Погашение долга: ${debt.name} (${debt.amount.toLocaleString()} ₸)\n\nКуда поступили деньги?\n1 - Kaspi\n2 - Halyk\n3 - БЦК\n4 - Наличные`,
             "1"
-        );
+    );
 
-        if (!payType) return;
+    if (!payType) return;
 
-        let selectedMethod = "Kaspi";
-        if (payType === "2") selectedMethod = "Halyk";
-        if (payType === "3") selectedMethod = "БЦК";
-        if (payType === "4") selectedMethod = "Наличные";
+    let selectedMethod = "Kaspi";
+    if (payType === "2") selectedMethod = "Halyk";
+    if (payType === "3") selectedMethod = "БЦК";
+    if (payType === "4") selectedMethod = "Наличные";
 
-        if (debt.checkNum) {
-            db.sales.forEach(sale => {
-                if (sale.checkNum === debt.checkNum && sale.paymentMethod === 'В долг') {
-                    sale.paymentMethod = `${selectedMethod} (Долг закрыт)`;
-                }
-            });
-        } else {
-            db.sales.unshift({
-                checkNum: "ДОЛГ-ОПЛ",
-                customer: `${debt.name} (${debt.phone || '—'})`,
-                code: "DEBT",
-                name: `Погашение долга: ${debt.note || 'Без заметки'}`,
-                size: "—",
-                qty: 1,
-                buyPrice: 0,
-                totalPrice: debt.amount,
-                totalBuyPrice: 0,
-                netProfit: debt.amount,
-                paymentMethod: `${selectedMethod} (Долг закрыт)`,
-                date: new Date().toLocaleDateString('ru-RU')
-            });
+    if (debt.checkNum) {
+      db.sales.forEach(sale => {
+        if (sale.checkNum === debt.checkNum && sale.paymentMethod === 'В долг') {
+          sale.paymentMethod = `${selectedMethod} (Долг закрыт)`;
         }
-
-        db.debts.splice(originalIdx, 1);
-        save();
-        alert(`✅ Долг на сумму ${debt.amount.toLocaleString()} ₸ успешно погашен через ${selectedMethod} и зачислен в чистую прибыль!`);
+      });
+    } else {
+      db.sales.unshift({
+        checkNum: "ДОЛГ-ОПЛ",
+        customer: `${debt.name} (${debt.phone || '—'})`,
+        code: "DEBT",
+        name: `Погашение долга: ${debt.note || 'Без заметки'}`,
+        size: "—",
+        qty: 1,
+        buyPrice: 0,
+        totalPrice: debt.amount,
+        totalBuyPrice: 0,
+        netProfit: debt.amount,
+        paymentMethod: `${selectedMethod} (Долг закрыт)`,
+        date: new Date().toLocaleDateString('ru-RU')
+      });
     }
 
-    function removeRow(type, idx) {
-        if (confirm("Удалить эту запись?")) {
-            db[type].splice(idx, 1);
-            save();
-        }
+    db.debts.splice(originalIdx, 1);
+    save();
+    alert(`✅ Долг на сумму ${debt.amount.toLocaleString()} ₸ успешно погашен через ${selectedMethod} и зачислен в чистую прибыль!`);
+  }
+
+  function removeRow(type, idx) {
+    if (confirm("Удалить эту запись?")) {
+      db[type].splice(idx, 1);
+      save();
+    }
+  }
+
+  function renderAdminStockTable() {
+    const q = (document.getElementById('admin_stock_search')?.value || '').toLowerCase().trim();
+    const tbody = document.getElementById('admin_stock_body');
+
+    const filtered = db.stock.map((item, originalIndex) => ({ item, originalIndex })).filter(({ item }) => {
+      const vars = getNormalizedVariants(item);
+      const colorNames = Object.keys(vars).join(' ').toLowerCase();
+      return (
+              item.code.toLowerCase().includes(q) ||
+              item.name.toLowerCase().includes(q) ||
+              colorNames.includes(q)
+      );
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">Товары по запросу "${q}" не найдены</td></tr>`;
+      return;
     }
 
-    function renderAdminStockTable() {
-        const q = (document.getElementById('admin_stock_search')?.value || '').toLowerCase().trim();
-        const tbody = document.getElementById('admin_stock_body');
+    tbody.innerHTML = filtered.map(({ item: r, originalIndex: i }) => {
+      const total = getItemTotalQuantity(r);
+      const vars = getNormalizedVariants(r);
+      const varsStr = Object.entries(vars).map(([color, sizes]) => {
+        const sStr = Object.entries(sizes).filter(([_, q]) => q > 0).map(([s, q]) => `${s}:${q}`).join(' ');
+        return `<div><b>${color}:</b> ${sStr || '<small style="opacity:0.5">0 шт</small>'}</div>`;
+      }).join('');
 
-        const filtered = db.stock.map((item, originalIndex) => ({ item, originalIndex })).filter(({ item }) => {
-            const vars = getNormalizedVariants(item);
-            const colorNames = Object.keys(vars).join(' ').toLowerCase();
-            return (
-                item.code.toLowerCase().includes(q) ||
-                item.name.toLowerCase().includes(q) ||
-                colorNames.includes(q)
-            );
-        });
-
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--text-muted);">Товары по запросу "${q}" не найдены</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = filtered.map(({ item: r, originalIndex: i }) => {
-            const total = getItemTotalQuantity(r);
-            const vars = getNormalizedVariants(r);
-            const varsStr = Object.entries(vars).map(([color, sizes]) => {
-                const sStr = Object.entries(sizes).filter(([_, q]) => q > 0).map(([s, q]) => `${s}:${q}`).join(' ');
-                return `<div><b>${color}:</b> ${sStr || '<small style="opacity:0.5">0 шт</small>'}</div>`;
-            }).join('');
-
-            const imgSrc = r.img || DEFAULT_LOGO;
-            return `
+      const imgSrc = r.img || DEFAULT_LOGO;
+      return `
                 <tr>
                     <td><img src="${imgSrc}" onclick="openImageViewer('${imgSrc}', '${r.name.replace(/'/g, "\\'")}')" style="width:36px; height:36px; border-radius:6px; object-fit:cover; cursor:pointer;"></td>
                     <td><b style="color:var(--accent-primary); font-size:12.5px;">${r.code}</b></td>
@@ -1712,32 +1712,32 @@
                     </td>
                 </tr>
             `;
-        }).join('');
+    }).join('');
+  }
+
+  function renderAdminDebtsTable() {
+    const q = (document.getElementById('admin_debt_search')?.value || '').toLowerCase().trim();
+    const tbody = document.getElementById('admin_debts_body');
+
+    const filtered = db.debts.map((item, originalIndex) => ({ item, originalIndex })).filter(({ item }) => {
+      return (
+              (item.name || '').toLowerCase().includes(q) ||
+              (item.phone || '').toLowerCase().includes(q) ||
+              (item.note || '').toLowerCase().includes(q)
+      );
+    });
+
+    const filteredTotalSum = filtered.reduce((sum, { item }) => sum + Number(item.amount || 0), 0);
+
+    document.getElementById('debt_search_count').innerText = `${filtered.length} ${filtered.length === 1 ? 'запись' : 'записей'}`;
+    document.getElementById('debt_search_total').innerText = `${filteredTotalSum.toLocaleString()} ₸`;
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Долги по запросу "${q}" не найдены</td></tr>`;
+      return;
     }
 
-    function renderAdminDebtsTable() {
-        const q = (document.getElementById('admin_debt_search')?.value || '').toLowerCase().trim();
-        const tbody = document.getElementById('admin_debts_body');
-
-        const filtered = db.debts.map((item, originalIndex) => ({ item, originalIndex })).filter(({ item }) => {
-            return (
-                (item.name || '').toLowerCase().includes(q) ||
-                (item.phone || '').toLowerCase().includes(q) ||
-                (item.note || '').toLowerCase().includes(q)
-            );
-        });
-
-        const filteredTotalSum = filtered.reduce((sum, { item }) => sum + Number(item.amount || 0), 0);
-
-        document.getElementById('debt_search_count').innerText = `${filtered.length} ${filtered.length === 1 ? 'запись' : 'записей'}`;
-        document.getElementById('debt_search_total').innerText = `${filteredTotalSum.toLocaleString()} ₸`;
-
-        if (filtered.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:20px; color:var(--text-muted);">Долги по запросу "${q}" не найдены</td></tr>`;
-            return;
-        }
-
-        tbody.innerHTML = filtered.map(({ item: r, originalIndex: i }, displayIdx) => `
+    tbody.innerHTML = filtered.map(({ item: r, originalIndex: i }, displayIdx) => `
             <tr>
                 <td>${displayIdx + 1}</td>
                 <td><b>${r.name}</b></td>
@@ -1760,29 +1760,29 @@
                 </td>
             </tr>
         `).join('');
-    }
+  }
 
-    function renderAdmin() {
-        const paidSales = db.sales.filter(s => s.paymentMethod !== 'В долг' && !s.isReturned);
-        const totalRevenue = paidSales.reduce((sum, s) => sum + s.totalPrice, 0);
-        const totalCogs = paidSales.reduce((sum, s) => sum + (s.totalBuyPrice !== undefined ? s.totalBuyPrice : ((s.buyPrice || 0) * s.qty)), 0);
-        const totalNetProfit = totalRevenue - totalCogs;
+  function renderAdmin() {
+    const paidSales = db.sales.filter(s => s.paymentMethod !== 'В долг' && !s.isReturned);
+    const totalRevenue = paidSales.reduce((sum, s) => sum + s.totalPrice, 0);
+    const totalCogs = paidSales.reduce((sum, s) => sum + (s.totalBuyPrice !== undefined ? s.totalBuyPrice : ((s.buyPrice || 0) * s.qty)), 0);
+    const totalNetProfit = totalRevenue - totalCogs;
 
-        const totalDebts = db.debts.reduce((sum, d) => sum + d.amount, 0);
-        const totalStockCost = db.stock.reduce((sum, item) => sum + (getItemTotalQuantity(item) * item.buyPrice), 0);
+    const totalDebts = db.debts.reduce((sum, d) => sum + d.amount, 0);
+    const totalStockCost = db.stock.reduce((sum, item) => sum + (getItemTotalQuantity(item) * item.buyPrice), 0);
 
-        document.getElementById('dash_revenue').innerText = `${totalRevenue.toLocaleString()} ₸`;
-        document.getElementById('dash_net_profit').innerText = `${totalNetProfit.toLocaleString()} ₸`;
-        document.getElementById('dash_total_debts').innerText = `${totalDebts.toLocaleString()} ₸`;
-        document.getElementById('dash_stock_cost').innerText = `${totalStockCost.toLocaleString()} ₸`;
+    document.getElementById('dash_revenue').innerText = `${totalRevenue.toLocaleString()} ₸`;
+    document.getElementById('dash_net_profit').innerText = `${totalNetProfit.toLocaleString()} ₸`;
+    document.getElementById('dash_total_debts').innerText = `${totalDebts.toLocaleString()} ₸`;
+    document.getElementById('dash_stock_cost').innerText = `${totalStockCost.toLocaleString()} ₸`;
 
-        renderAdminStockTable();
-        renderAdminDebtsTable();
+    renderAdminStockTable();
+    renderAdminDebtsTable();
 
-        document.getElementById('admin_sales_body').innerHTML = db.sales.map((r, i) => {
-            const isDebt = r.paymentMethod === 'В долг';
-            const isRet = r.isReturned;
-            return `
+    document.getElementById('admin_sales_body').innerHTML = db.sales.map((r, i) => {
+      const isDebt = r.paymentMethod === 'В долг';
+      const isRet = r.isReturned;
+      return `
                 <tr style="${isRet ? 'opacity:0.4; text-decoration:line-through;' : ''}">
                     <td><b>${r.checkNum || '—'}</b></td>
                     <td>${r.customer || 'Клиент'}</td>
@@ -1801,10 +1801,10 @@
                     </td>
                 </tr>
             `;
-        }).join('');
-    }
+    }).join('');
+  }
 
-    initBranding();
+  initBranding();
 </script>
 </body>
 </html>
