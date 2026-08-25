@@ -8,9 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Firebase SDK Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <style>
     :root {
@@ -684,48 +681,43 @@
   const ADULT_SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL'];
   const KIDS_SIZES = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCq9cO-pkC37fqRkcBLCPbnKWUzIKvZvPA",
-    authDomain: "dilbarluxe.firebaseapp.com",
-    projectId: "dilbarluxe",
-    storageBucket: "dilbarluxe.firebasestorage.app",
-    messagingSenderId: "168275361312",
-    appId: "1:168275361312:web:48ecd2e65bfb2ca6fac645",
-    measurementId: "G-ML83HHLBJN"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const firestoreDb = firebase.firestore();
-
-  // Новая чистая коллекция для ручного заполнения с нуля
-  const storeDoc = firestoreDb.collection("store").doc("empty_clean_store");
-
   let db = { stock: [], sales: [], debts: [] };
   let cart = [];
   let selectedColorState = {};
   let selectedSizeState = {};
 
-  storeDoc.onSnapshot((doc) => {
-    if (doc.exists) {
-      db = doc.data();
-      if (!db.stock) db.stock = [];
-      if (!db.sales) db.sales = [];
-      if (!db.debts) db.debts = [];
-    } else {
-      db = { stock: [], sales: [], debts: [] };
-      save();
+  function normalizeStore(data) {
+    return {
+      stock: Array.isArray(data?.stock) ? data.stock : [],
+      sales: Array.isArray(data?.sales) ? data.sales : [],
+      debts: Array.isArray(data?.debts) ? data.debts : []
+    };
+  }
+
+  async function loadStore() {
+    try {
+      const res = await fetch("/api/store");
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      db = normalizeStore(await res.json());
+    } catch (error) {
+      console.error("Ошибка SQLite:", error);
+      alert("Не удалось подключиться к SQLite. Запустите приложение через npm start и откройте http://localhost:3000");
     }
     renderCatalog();
     renderAdmin();
-  }, (error) => {
-    console.error("Ошибка Firebase:", error);
-  });
+  }
 
   function save() {
-    storeDoc.set(db).catch((err) => console.error("Ошибка сохранения:", err));
+    fetch("/api/store", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(db)
+    }).catch((err) => console.error("Ошибка сохранения SQLite:", err));
     renderCatalog();
     renderAdmin();
   }
+
+  loadStore();
 
   function clearAllData() {
     const pin = prompt("Введите PIN для полной очистки базы:");
